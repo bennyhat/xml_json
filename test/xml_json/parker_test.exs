@@ -15,7 +15,12 @@ defmodule XmlJson.ParkerTest do
       <root><name>Xml</name><encoding>ASCII</encoding><cat><name>Moonpie</name><encoding>wildness</encoding></cat></root>
       """
 
-      assert {:ok, %{"name" => "Xml", "encoding" => "ASCII", "cat" => %{"encoding" => "wildness", "name" => "Moonpie"}}} == XmlJson.Parker.deserialize(xml)
+      assert {:ok,
+              %{
+                "name" => "Xml",
+                "encoding" => "ASCII",
+                "cat" => %{"encoding" => "wildness", "name" => "Moonpie"}
+              }} == XmlJson.Parker.deserialize(xml)
     end
 
     test "numbers are recognized" do
@@ -31,7 +36,8 @@ defmodule XmlJson.ParkerTest do
       <root><checked>True</checked><answer>FALSE</answer><poked>true</poked></root>
       """
 
-      assert {:ok, %{"checked" => true, "answer" => false, "poked" => true}} == XmlJson.Parker.deserialize(xml)
+      assert {:ok, %{"checked" => true, "answer" => false, "poked" => true}} ==
+               XmlJson.Parker.deserialize(xml)
     end
 
     test "strings are escaped" do
@@ -39,6 +45,7 @@ defmodule XmlJson.ParkerTest do
       <root>Quote: &quot; New-line:
       </root>
       """
+
       assert {:ok, "Quote: \" New-line:\n"} == XmlJson.Parker.deserialize(xml)
     end
 
