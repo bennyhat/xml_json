@@ -72,6 +72,7 @@ defmodule XmlJson.SaxHandler do
       _ -> :error
     end
   end
+
   defp float_parse(value) do
     case Float.parse(value) do
       {parsed, ""} -> parsed

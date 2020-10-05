@@ -20,15 +20,12 @@ defmodule XmlJson.Parker do
     accumulate_children(children)
     |> maybe_hoist_children()
   end
-  defp update_children(_parker, _no_children), do: nil
 
-  defp maybe_hoist_children(parker) when map_size(parker) == 1 do
-    case Map.values(parker) do
-      [list] when is_list(list) -> list
-      _ -> parker
-    end
-  end
-  defp maybe_hoist_children(parker), do: parker
+  defp update_children(_parker, _no_children), do: nil
+  defp update_text(nil, %{text: ""}), do: nil
+  defp update_text(nil, %{text: text}), do: text
+  defp update_text(parker, _ignored), do: parker
+  defp update_attributes(parker, _ignored), do: parker
 
   defp accumulate_children(children) do
     Enum.reduce(children, %{}, fn i, a ->
@@ -42,8 +39,12 @@ defmodule XmlJson.Parker do
     List.wrap(value) ++ [walked]
   end
 
-  defp update_text(nil, %{text: ""}), do: nil
-  defp update_text(nil, %{text: text}), do: text
-  defp update_text(parker, _ignored), do: parker
-  defp update_attributes(parker, _ignored), do: parker
+  defp maybe_hoist_children(parker) when map_size(parker) == 1 do
+    case Map.values(parker) do
+      [list] when is_list(list) -> list
+      _ -> parker
+    end
+  end
+
+  defp maybe_hoist_children(parker), do: parker
 end
