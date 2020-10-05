@@ -231,7 +231,8 @@ defmodule XmlJson.BadgerFishTest do
             "$" => "frank",
             "@xmlns" => %{
               "charlie" => "http:\/\/some-other-namespace",
-              "$" => "http:\/\/some-namespace"
+              "$" => "http:\/\/some-namespace",
+              "chet" => "http:\/\/namespace.example.com"
             }
           },
           "@xmlns" => %{
@@ -242,7 +243,7 @@ defmodule XmlJson.BadgerFishTest do
       }
 
       xml = """
-      <alice xmlns="http://some-namespace" xmlns:charlie="http://some-other-namespace"><bob>david</bob><charlie:edgar>frank</charlie:edgar></alice>
+      <alice xmlns="http://some-namespace" xmlns:charlie="http://some-other-namespace"><bob>david</bob><charlie:edgar xmlns:chet="http://namespace.example.com">frank</charlie:edgar></alice>
       """
 
       assert {:ok, String.trim(xml)} == XmlJson.BadgerFish.serialize(object)

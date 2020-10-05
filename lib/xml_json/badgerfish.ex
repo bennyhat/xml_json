@@ -19,17 +19,17 @@ defmodule XmlJson.BadgerFish do
       String.starts_with?(k, "@")
     end)
     |> Map.new()
-    |> Map.drop(ns_keys)
     children_object = Map.drop(object, Map.keys(attributes_object) ++ ns_keys)
-    current_ns_keys = Map.keys(attributes_object)
-    |> Enum.filter(fn
-      "@xmlns" -> true
-      _ -> false
-    end)
-    child_ns_keys = current_ns_keys ++ ns_keys
-
     attributes = Enum.map(attributes_object, &to_simple_attribute/1)
     |> List.flatten()
+    |> Enum.reject(fn {k, v} -> k in ns_keys end)
+
+    new_ns_keys = Enum.filter(attributes, fn
+      {"xmlns" <> _rest, v} -> true
+      _ -> false
+    end)
+    |> Enum.map(fn {k, v} -> k end)
+    child_ns_keys = new_ns_keys ++ ns_keys
 
     children = Enum.map(children_object, &to_simple_child(&1, child_ns_keys))
     |> List.flatten()
@@ -49,7 +49,7 @@ defmodule XmlJson.BadgerFish do
     {name, [], [{:characters, to_string(scalar)}]}
   end
 
-  defp to_simple_child({k, v}, namespace_keys \\ []), do: to_simple_form(v, k, namespace_keys)
+  defp to_simple_child({k, v}, ns_keys), do: to_simple_form(v, k, ns_keys)
 
   defp to_simple_attribute({"@xmlns", value}) do
     Enum.map(value, fn
