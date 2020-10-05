@@ -1,13 +1,21 @@
 defmodule XmlJson.ParkerTest do
   use ExUnit.Case
 
-  describe "deserialize" do
-    test "scalars are absorbed" do
+  describe "deserialize/2" do
+    test "root is absorbed" do
       xml = """
       <root>test</root>
       """
 
       assert {:ok, "test"} == XmlJson.Parker.deserialize(xml)
+    end
+
+    test "root is optionally preserved" do
+      xml = """
+      <root>test</root>
+      """
+
+      assert {:ok, %{"root" => "test"}} == XmlJson.Parker.deserialize(xml, preserve_root?: true)
     end
 
     test "element names become object properties" do

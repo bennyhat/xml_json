@@ -32,9 +32,17 @@ defmodule XmlJson.Parker do
     {name, [], [{:characters, to_string(scalar)}]}
   end
 
-  def deserialize(xml) when is_binary(xml) do
+  def deserialize(xml, opts \\ []) when is_binary(xml) do
+    preserve_root? = Keyword.get(opts, :preserve_root?, false)
+
     {:ok, element} = Saxy.parse_string(xml, XmlJson.SaxHandler, [])
-    {:ok, walk_element(element)}
+    walked_element = walk_element(element)
+
+    if preserve_root? do
+      {:ok, %{element.name => walked_element}}
+    else
+      {:ok, walked_element}
+    end
   end
 
   defp walk_element(element) do
