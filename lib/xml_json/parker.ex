@@ -12,8 +12,8 @@ defmodule XmlJson.Parker do
     |> Saxy.encode!()
     {:ok, xml}
   end
-  def serialize(list, opts) when is_list(list), do: {:error, :cannot_serialize_root_list}
-  def serialize(_scalar, opts), do: {:error, :cannot_serialize_root_scalar}
+  def serialize(list, _opts) when is_list(list), do: {:error, :cannot_serialize_root_list}
+  def serialize(_scalar, _opts), do: {:error, :cannot_serialize_root_scalar}
 
   defp to_simple_form(object, name) when is_map(object) do
     children = Enum.map(object, fn {k, v} -> to_simple_form(v, k) end)
@@ -23,7 +23,7 @@ defmodule XmlJson.Parker do
     Enum.map(list, fn item -> to_simple_form(name, item) end)
   end
   defp to_simple_form(scalar, name) do
-    {name, [], [scalar]}
+    {name, [], [{:characters, to_string(scalar)}]}
   end
 
   def deserialize(xml) when is_binary(xml) do

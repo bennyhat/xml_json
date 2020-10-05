@@ -102,5 +102,42 @@ defmodule XmlJson.ParkerTest do
       """
       assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
     end
+
+    test "numbers are recognized" do
+      object = %{
+        "age" => 12,
+        "height" => 1.73
+      }
+
+      xml = """
+      <root><age>12</age><height>1.73</height></root>
+      """
+      assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
+    end
+
+    test "booleans are recognized" do
+      object = %{
+        "checked" => true,
+        "answer" => false,
+        "poked" => true
+      }
+      xml = """
+      <root><answer>false</answer><checked>true</checked><poked>true</poked></root>
+      """
+      assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
+    end
+
+    test "strings are unescaped" do
+      object = %{
+        "hello" => "Quote: \" New-line:\n"
+      }
+
+      xml = """
+      <root><hello>Quote: &quot; New-line:
+      </hello></root>
+      """
+
+      assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
+    end
   end
 end
