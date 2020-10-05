@@ -10,25 +10,34 @@ defmodule XmlJson.BadgerFish do
     {:ok, %{element.name => walk_element(element)}}
   end
 
-  defp update_children(badgerfish, %{children: children}) do
-    Enum.reduce(children, badgerfish, fn i, a ->
-      walked = walk_element(i)
+  defp walk_element(element) do
+    update_children(%{}, element)
+    |> update_text(element)
+    |> update_attributes(element)
+  end
 
-      Map.update(a, i.name, walked, fn thing ->
-        wrapped_thing = List.wrap(thing)
-        wrapped_thing ++ [walked]
-      end)
-    end)
+  defp update_children(badgerfish, %{children: children}) do
+    accumulate_children(badgerfish, children)
     |> Map.delete("$")
   end
   defp update_children(badgerfish, _no_children), do: badgerfish
 
-  defp update_text(badgerfish, %{text: ""}), do: badgerfish
+  defp accumulate_children(badgerfish, children) do
+    Enum.reduce(children, badgerfish, fn element, object ->
+      walked = walk_element(element)
 
+      Map.update(object, element.name, walked, &accumulate_list(&1, walked))
+    end)
+  end
+
+  defp accumulate_list(value, walked) do
+    List.wrap(value) ++ [walked]
+  end
+
+  defp update_text(badgerfish, %{text: ""}), do: badgerfish
   defp update_text(badgerfish, %{text: text}) do
     Map.put(badgerfish, "$", text)
   end
-
   defp update_text(badgerfish, _empty_element), do: badgerfish
 
   defp update_attributes(badgerfish, element) do
@@ -41,11 +50,6 @@ defmodule XmlJson.BadgerFish do
     end)
   end
 
-  defp walk_element(element) do
-    update_children(%{}, element)
-    |> update_text(element)
-    |> update_attributes(element)
-  end
 
   defp handle_namespaces("xmlns", value) do
     {"xmlns", %{"$" => value}}

@@ -11,34 +11,39 @@ defmodule XmlJson.Parker do
   end
 
   defp walk_element(element) do
-    case Map.has_key?(element, :children) do
-      false ->
-        case Map.has_key?(element, :text) do
-          true -> element.text
-          false -> nil
-        end
+    update_children(%{}, element)
+    |> update_text(element)
+    |> update_attributes(element)
+  end
 
-      true ->
-        walky =
-          Enum.reduce(element.children, %{}, fn i, a ->
-            walked = walk_element(i)
+  defp update_children(_parker, %{children: children}) do
+    accumulate_children(children)
+    |> maybe_hoist_children()
+  end
+  defp update_children(_parker, _no_children), do: nil
 
-            Map.update(a, i.name, walked, fn thing ->
-              wrapped_thing = List.wrap(thing)
-              wrapped_thing ++ [walked]
-            end)
-          end)
-
-        case length(Map.keys(walky)) do
-          1 ->
-            case Map.values(walky) do
-              [list] when is_list(list) -> list
-              _ -> walky
-            end
-
-          _ ->
-            walky
-        end
+  defp maybe_hoist_children(parker) when map_size(parker) == 1 do
+    case Map.values(parker) do
+      [list] when is_list(list) -> list
+      _ -> parker
     end
   end
+  defp maybe_hoist_children(parker), do: parker
+
+  defp accumulate_children(children) do
+    Enum.reduce(children, %{}, fn i, a ->
+      walked = walk_element(i)
+
+      Map.update(a, i.name, walked, &accumulate_list(&1, walked))
+    end)
+  end
+
+  defp accumulate_list(value, walked) do
+    List.wrap(value) ++ [walked]
+  end
+
+  defp update_text(nil, %{text: ""}), do: nil
+  defp update_text(nil, %{text: text}), do: text
+  defp update_text(parker, _ignored), do: parker
+  defp update_attributes(parker, _ignored), do: parker
 end
