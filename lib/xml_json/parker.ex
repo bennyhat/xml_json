@@ -5,6 +5,27 @@ defmodule XmlJson.Parker do
   https://developer.mozilla.org/en-US/docs/Archive/JXON#The_Parker_Convention
   """
 
+  def serialize(value, opts \\ [])
+  def serialize(object, opts) when is_map(object) do
+    name = Keyword.get(opts, :root_name, "root")
+    xml = to_simple_form(object, name)
+    |> Saxy.encode!()
+    {:ok, xml}
+  end
+  def serialize(list, opts) when is_list(list), do: {:error, :cannot_serialize_root_list}
+  def serialize(_scalar, opts), do: {:error, :cannot_serialize_root_scalar}
+
+  defp to_simple_form(object, name) when is_map(object) do
+    children = Enum.map(object, fn {k, v} -> to_simple_form(v, k) end)
+    {name, [], children}
+  end
+  defp to_simple_form(list, name) when is_list(list) do
+    Enum.map(list, fn item -> to_simple_form(name, item) end)
+  end
+  defp to_simple_form(scalar, name) do
+    {name, [], [scalar]}
+  end
+
   def deserialize(xml) when is_binary(xml) do
     {:ok, element} = Saxy.parse_string(xml, XmlJson.SaxHandler, [])
     {:ok, walk_element(element)}

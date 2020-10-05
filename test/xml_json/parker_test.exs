@@ -2,7 +2,7 @@ defmodule XmlJson.ParkerTest do
   use ExUnit.Case
 
   describe "deserialize" do
-    test "scalar is absorbed" do
+    test "scalars are absorbed" do
       xml = """
       <root>test</root>
       """
@@ -65,7 +65,7 @@ defmodule XmlJson.ParkerTest do
       assert {:ok, [1, 2, "three"]} == XmlJson.Parker.deserialize(xml)
     end
 
-    test "mixed mode text, comment and element nodes, absorb text and comments" do
+    test "for mixed mode text, comments, attributes and element nodes, it absorb all but the elements" do
       xml = """
       <root version="1.0">testing<!--comment--><element test="true">1</element></root>
       """
@@ -79,6 +79,28 @@ defmodule XmlJson.ParkerTest do
       """
 
       assert {:ok, %{"ding:dong" => "binnen"}} == XmlJson.Parker.deserialize(xml)
+    end
+  end
+  describe "serialize/1" do
+    test "root scalars are treated as lossy" do
+      assert {:error, _} = XmlJson.Parker.serialize("dog")
+    end
+
+    test "root lists are treated as lossy" do
+      assert {:error, _} = XmlJson.Parker.serialize([1, 2, 3])
+    end
+
+    test "object properties become (\"sorted\" via Map) element names under a default root" do
+      object = %{
+        "name" => "Xml",
+        "encoding" => "ASCII",
+        "cat" => %{"encoding" => "wildness", "name" => "Moonpie"}
+      }
+
+      xml = """
+      <root><cat><encoding>wildness</encoding><name>Moonpie</name></cat><encoding>ASCII</encoding><name>Xml</name></root>
+      """
+      assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
     end
   end
 end
