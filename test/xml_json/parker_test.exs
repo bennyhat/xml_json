@@ -139,5 +139,36 @@ defmodule XmlJson.ParkerTest do
 
       assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
     end
+
+    test "nils become empty elements" do
+      object = %{
+        "dead" => nil
+      }
+      xml = """
+      <root><dead/></root>
+      """
+
+      assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
+    end
+
+    test "lists become the same, repeated element" do
+      object = %{
+        "listy" => [1, 2.3, "four", false]
+      }
+      xml = """
+      <root><listy>1</listy><listy>2.3</listy><listy>four</listy><listy>false</listy></root>
+      """
+      assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
+    end
+
+    test "can at least put back down namespaced keys" do
+      object = %{
+        "namespaced:key" => "true"
+      }
+      xml = """
+      <root><namespaced:key>true</namespaced:key></root>
+      """
+      assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
+    end
   end
 end

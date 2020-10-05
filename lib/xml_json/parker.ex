@@ -10,6 +10,7 @@ defmodule XmlJson.Parker do
     name = Keyword.get(opts, :root_name, "root")
     xml = to_simple_form(object, name)
     |> Saxy.encode!()
+
     {:ok, xml}
   end
   def serialize(list, _opts) when is_list(list), do: {:error, :cannot_serialize_root_list}
@@ -17,10 +18,15 @@ defmodule XmlJson.Parker do
 
   defp to_simple_form(object, name) when is_map(object) do
     children = Enum.map(object, fn {k, v} -> to_simple_form(v, k) end)
+    |> List.flatten()
+
     {name, [], children}
   end
   defp to_simple_form(list, name) when is_list(list) do
-    Enum.map(list, fn item -> to_simple_form(name, item) end)
+    Enum.map(list, fn item -> to_simple_form(item, name) end)
+  end
+  defp to_simple_form(nil, name) do
+    {name, [], []}
   end
   defp to_simple_form(scalar, name) do
     {name, [], [{:characters, to_string(scalar)}]}
