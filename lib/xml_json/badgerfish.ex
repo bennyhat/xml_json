@@ -13,33 +13,43 @@ defmodule XmlJson.BadgerFish do
     {:ok, xml}
   end
 
-  defp to_simple_form(object, name) when is_map(object) do
+  defp to_simple_form(object, name, ns_keys \\ [])
+  defp to_simple_form(object, name, ns_keys) when is_map(object) do
     attributes_object = Enum.filter(object, fn {k, _v} ->
       String.starts_with?(k, "@")
     end)
     |> Map.new()
-    children_object = Map.drop(object, Map.keys(attributes_object))
+    |> Map.drop(ns_keys)
+    children_object = Map.drop(object, Map.keys(attributes_object) ++ ns_keys)
+    current_ns_keys = Map.keys(attributes_object)
+    |> Enum.filter(fn
+      "@xmlns" -> true
+      _ -> false
+    end)
+    child_ns_keys = current_ns_keys ++ ns_keys
 
     attributes = Enum.map(attributes_object, &to_simple_attribute/1)
     |> List.flatten()
 
-    children = Enum.map(children_object, fn {k, v} -> to_simple_form(v, k) end)
+    children = Enum.map(children_object, &to_simple_child(&1, child_ns_keys))
     |> List.flatten()
 
     {name, attributes, children}
   end
-  defp to_simple_form(list, name) when is_list(list) do
-    Enum.map(list, fn item -> to_simple_form(item, name) end)
+  defp to_simple_form(list, name, ns_keys) when is_list(list) do
+    Enum.map(list, fn item -> to_simple_form(item, name, ns_keys) end)
   end
-  defp to_simple_form(nil, name) do
+  defp to_simple_form(nil, name, _ns_keys) do
     {name, [], []}
   end
-  defp to_simple_form(scalar, "$") do
+  defp to_simple_form(scalar, "$", _ns_keys) do
     {:characters, to_string(scalar)}
   end
-  defp to_simple_form(scalar, name) do
+  defp to_simple_form(scalar, name, _ns_keys) do
     {name, [], [{:characters, to_string(scalar)}]}
   end
+
+  defp to_simple_child({k, v}, namespace_keys \\ []), do: to_simple_form(v, k, namespace_keys)
 
   defp to_simple_attribute({"@xmlns", value}) do
     Enum.map(value, fn
