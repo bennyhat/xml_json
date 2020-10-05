@@ -7,7 +7,11 @@ defmodule XmlJson.MixProject do
       version: "0.1.0",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      description: description(),
+      package: package(),
+      name: "XmlJson",
+      source_url: "https://github.com/bennyhat/xml_json"
     ]
   end
 
@@ -19,7 +23,19 @@ defmodule XmlJson.MixProject do
 
   defp deps do
     [
-      {:saxy, "~> 1.2"}
+      {:saxy, "~> 1.2"},
+      {:ex_doc, "~> 0.22", only: :dev, runtime: false}
+    ]
+  end
+
+  defp description do
+    "Convention based conversion to/from XML/JSON"
+  end
+
+  defp package do
+    [
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/bennyhat/xml_json"}
     ]
   end
 end

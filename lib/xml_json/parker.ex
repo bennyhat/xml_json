@@ -13,18 +13,23 @@ defmodule XmlJson.Parker do
 
   ## Examples
 
-  iex> XmlJson.Parker.serialize(%{"alice" => "bob"}, preserve_root: "alice")
-  {:ok, "<alice>bob</alice>"}
+      iex> XmlJson.Parker.serialize(%{"alice" => "bob"}, preserve_root: "alice")
+      {:ok, "<alice>bob</alice>"}
+
   """
   def serialize(value, opts \\ [])
+
   def serialize(object, opts) when is_map(object) do
     name = Keyword.get(opts, :preserve_root, "root")
     value = Map.get(object, name, object)
-    xml = to_simple_form(value, name)
-    |> Saxy.encode!()
+
+    xml =
+      to_simple_form(value, name)
+      |> Saxy.encode!()
 
     {:ok, xml}
   end
+
   def serialize(list, _opts) when is_list(list), do: {:error, :cannot_serialize_root_list}
   def serialize(_scalar, _opts), do: {:error, :cannot_serialize_root_scalar}
 
@@ -36,8 +41,9 @@ defmodule XmlJson.Parker do
 
   ## Examples
 
-  iex> XmlJson.Parker.deserialize("<alice>bob</alice>", preserve_root: true)
-  {:ok, %{"alice" => "bob"}}
+      iex> XmlJson.Parker.deserialize("<alice>bob</alice>", preserve_root: true)
+      {:ok, %{"alice" => "bob"}}
+
   """
   def deserialize(xml, opts \\ []) when is_binary(xml) do
     preserve_root = Keyword.get(opts, :preserve_root, false)
@@ -53,21 +59,24 @@ defmodule XmlJson.Parker do
   end
 
   defp to_simple_form(object, name) when is_map(object) do
-    children = Enum.map(object, fn {k, v} -> to_simple_form(v, k) end)
-    |> List.flatten()
+    children =
+      Enum.map(object, fn {k, v} -> to_simple_form(v, k) end)
+      |> List.flatten()
 
     {name, [], children}
   end
+
   defp to_simple_form(list, name) when is_list(list) do
     Enum.map(list, fn item -> to_simple_form(item, name) end)
   end
+
   defp to_simple_form(nil, name) do
     {name, [], []}
   end
+
   defp to_simple_form(scalar, name) do
     {name, [], [{:characters, to_string(scalar)}]}
   end
-
 
   defp walk_element(element) do
     update_children(%{}, element)

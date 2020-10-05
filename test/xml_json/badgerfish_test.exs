@@ -156,6 +156,7 @@ defmodule XmlJson.BadgerFishTest do
 
     test "the dollar properties of an element go into the text of an element" do
       object = %{"alice" => %{"$" => "bob"}}
+
       xml = """
       <alice>bob</alice>
       """
@@ -174,6 +175,7 @@ defmodule XmlJson.BadgerFishTest do
           }
         }
       }
+
       xml = """
       <alice><bob>charlie</bob><david>edgar</david></alice>
       """

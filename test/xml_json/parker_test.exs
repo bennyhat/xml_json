@@ -111,6 +111,7 @@ defmodule XmlJson.ParkerTest do
       xml = """
       <root><cat><encoding>wildness</encoding><name>Moonpie</name></cat><encoding>ASCII</encoding><name>Xml</name></root>
       """
+
       assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
     end
 
@@ -123,6 +124,7 @@ defmodule XmlJson.ParkerTest do
       xml = """
       <root><age>12</age><height>1.73</height></root>
       """
+
       assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
     end
 
@@ -132,9 +134,11 @@ defmodule XmlJson.ParkerTest do
         "answer" => false,
         "poked" => true
       }
+
       xml = """
       <root><answer>false</answer><checked>true</checked><poked>true</poked></root>
       """
+
       assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
     end
 
@@ -155,6 +159,7 @@ defmodule XmlJson.ParkerTest do
       object = %{
         "dead" => nil
       }
+
       xml = """
       <root><dead/></root>
       """
@@ -166,9 +171,11 @@ defmodule XmlJson.ParkerTest do
       object = %{
         "listy" => [1, 2.3, "four", false]
       }
+
       xml = """
       <root><listy>1</listy><listy>2.3</listy><listy>four</listy><listy>false</listy></root>
       """
+
       assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
     end
 
@@ -176,9 +183,11 @@ defmodule XmlJson.ParkerTest do
       object = %{
         "namespaced:key" => "true"
       }
+
       xml = """
       <root><namespaced:key>true</namespaced:key></root>
       """
+
       assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
     end
 
@@ -187,9 +196,11 @@ defmodule XmlJson.ParkerTest do
         "root" => "true",
         "invalid_sibling" => "stuff"
       }
+
       xml = """
       <root>true</root>
       """
+
       assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
     end
 
@@ -198,9 +209,11 @@ defmodule XmlJson.ParkerTest do
         "root" => "true",
         "sibling" => "stuff"
       }
+
       xml = """
       <sibling>stuff</sibling>
       """
+
       assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object, preserve_root: "sibling")
     end
 
@@ -209,9 +222,11 @@ defmodule XmlJson.ParkerTest do
         "root" => "true",
         "sibling" => "stuff"
       }
+
       xml = """
       <custom><root>true</root><sibling>stuff</sibling></custom>
       """
+
       assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object, preserve_root: "custom")
     end
   end

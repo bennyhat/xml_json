@@ -12,14 +12,16 @@ defmodule XmlJson.BadgerFish do
 
   ## Examples
 
-  iex> XmlJson.BadgerFish.serialize(%{"alice" => %{"$" => "bob"}})
-  {:ok, "<alice>bob</alice>"}
+      iex> XmlJson.BadgerFish.serialize(%{"alice" => %{"$" => "bob"}})
+      {:ok, "<alice>bob</alice>"}
+
   """
   def serialize(object) do
     [{name, value}] = Map.to_list(object)
 
-    xml = to_simple_form(value, name)
-    |> Saxy.encode!()
+    xml =
+      to_simple_form(value, name)
+      |> Saxy.encode!()
 
     {:ok, xml}
   end
@@ -31,8 +33,9 @@ defmodule XmlJson.BadgerFish do
 
   ## Examples
 
-  iex> XmlJson.BadgerFish.deserialize("<alice>bob</alice>")
-  {:ok, %{"alice" => %{"$" => "bob"}}}
+      iex> XmlJson.BadgerFish.deserialize("<alice>bob</alice>")
+      {:ok, %{"alice" => %{"$" => "bob"}}}
+
   """
   def deserialize(xml) when is_binary(xml) do
     {:ok, element} = Saxy.parse_string(xml, XmlJson.SaxHandler, [])
@@ -40,37 +43,49 @@ defmodule XmlJson.BadgerFish do
   end
 
   defp to_simple_form(object, name, ns_keys \\ [])
-  defp to_simple_form(object, name, ns_keys) when is_map(object) do
-    attributes_object = Enum.filter(object, fn {k, _v} ->
-      String.starts_with?(k, "@")
-    end)
-    |> Map.new()
-    children_object = Map.drop(object, Map.keys(attributes_object) ++ ns_keys)
-    attributes = Enum.map(attributes_object, &to_simple_attribute/1)
-    |> List.flatten()
-    |> Enum.reject(fn {k, _v} -> k in ns_keys end)
 
-    new_ns_keys = Enum.filter(attributes, fn
-      {"xmlns" <> _rest, _v} -> true
-      _ -> false
-    end)
-    |> Enum.map(fn {k, _v} -> k end)
+  defp to_simple_form(object, name, ns_keys) when is_map(object) do
+    attributes_object =
+      Enum.filter(object, fn {k, _v} ->
+        String.starts_with?(k, "@")
+      end)
+      |> Map.new()
+
+    children_object = Map.drop(object, Map.keys(attributes_object) ++ ns_keys)
+
+    attributes =
+      Enum.map(attributes_object, &to_simple_attribute/1)
+      |> List.flatten()
+      |> Enum.reject(fn {k, _v} -> k in ns_keys end)
+
+    new_ns_keys =
+      Enum.filter(attributes, fn
+        {"xmlns" <> _rest, _v} -> true
+        _ -> false
+      end)
+      |> Enum.map(fn {k, _v} -> k end)
+
     child_ns_keys = new_ns_keys ++ ns_keys
 
-    children = Enum.map(children_object, &to_simple_child(&1, child_ns_keys))
-    |> List.flatten()
+    children =
+      Enum.map(children_object, &to_simple_child(&1, child_ns_keys))
+      |> List.flatten()
 
     {name, attributes, children}
   end
+
   defp to_simple_form(list, name, ns_keys) when is_list(list) do
     Enum.map(list, fn item -> to_simple_form(item, name, ns_keys) end)
   end
+
   defp to_simple_form(nil, name, _ns_keys) do
     {name, [], []}
   end
+
   defp to_simple_form(scalar, "$", _ns_keys) do
     {:characters, to_string(scalar)}
   end
+
   defp to_simple_form(scalar, name, _ns_keys) do
     {name, [], [{:characters, to_string(scalar)}]}
   end
@@ -83,6 +98,7 @@ defmodule XmlJson.BadgerFish do
       {k, v} -> {"xmlns:" <> k, v}
     end)
   end
+
   defp to_simple_attribute({name, value}) do
     {String.trim(name, "@"), value}
   end
