@@ -2,7 +2,18 @@ defmodule XmlJson.BadgerFish do
   @moduledoc """
   The BadgerFish implementation of XML <=> JSON
 
-  http://badgerfish.ning.com/
+  http://www.sklar.com/badgerfish/
+  """
+
+  @doc """
+  Serializes the given Map.
+
+  Returns an `:ok` tuple with the Map serialized to XML
+
+  ## Examples
+
+  iex> XmlJson.BadgerFish.serialize(%{"alice" => %{"$" => "bob"}})
+  {:ok, "<alice>bob</alice>"}
   """
   def serialize(object) do
     [{name, value}] = Map.to_list(object)
@@ -11,6 +22,21 @@ defmodule XmlJson.BadgerFish do
     |> Saxy.encode!()
 
     {:ok, xml}
+  end
+
+  @doc """
+  Deserializes the given XML string.
+
+  Returns an `:ok` tuple with the XML serialized to a Map
+
+  ## Examples
+
+  iex> XmlJson.BadgerFish.deserialize("<alice>bob</alice>")
+  {:ok, %{"alice" => %{"$" => "bob"}}}
+  """
+  def deserialize(xml) when is_binary(xml) do
+    {:ok, element} = Saxy.parse_string(xml, XmlJson.SaxHandler, [])
+    {:ok, %{element.name => walk_element(element)}}
   end
 
   defp to_simple_form(object, name, ns_keys \\ [])
@@ -22,13 +48,13 @@ defmodule XmlJson.BadgerFish do
     children_object = Map.drop(object, Map.keys(attributes_object) ++ ns_keys)
     attributes = Enum.map(attributes_object, &to_simple_attribute/1)
     |> List.flatten()
-    |> Enum.reject(fn {k, v} -> k in ns_keys end)
+    |> Enum.reject(fn {k, _v} -> k in ns_keys end)
 
     new_ns_keys = Enum.filter(attributes, fn
-      {"xmlns" <> _rest, v} -> true
+      {"xmlns" <> _rest, _v} -> true
       _ -> false
     end)
-    |> Enum.map(fn {k, v} -> k end)
+    |> Enum.map(fn {k, _v} -> k end)
     child_ns_keys = new_ns_keys ++ ns_keys
 
     children = Enum.map(children_object, &to_simple_child(&1, child_ns_keys))
@@ -59,11 +85,6 @@ defmodule XmlJson.BadgerFish do
   end
   defp to_simple_attribute({name, value}) do
     {String.trim(name, "@"), value}
-  end
-
-  def deserialize(xml) when is_binary(xml) do
-    {:ok, element} = Saxy.parse_string(xml, XmlJson.SaxHandler, [])
-    {:ok, %{element.name => walk_element(element)}}
   end
 
   defp walk_element(element) do

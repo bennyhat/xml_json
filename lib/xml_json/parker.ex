@@ -5,16 +5,52 @@ defmodule XmlJson.Parker do
   https://developer.mozilla.org/en-US/docs/Archive/JXON#The_Parker_Convention
   """
 
+  @doc """
+  Serializes the given Map.
+  Takes an option (`preserve_root`, defaults to "root") for what property to hoist or inject as the root element
+
+  Returns an `:ok` tuple with the Map serialized to XML
+
+  ## Examples
+
+  iex> XmlJson.Parker.serialize(%{"alice" => "bob"}, preserve_root: "alice")
+  {:ok, "<alice>bob</alice>"}
+  """
   def serialize(value, opts \\ [])
   def serialize(object, opts) when is_map(object) do
-    name = Keyword.get(opts, :root_name, "root")
-    xml = to_simple_form(object, name)
+    name = Keyword.get(opts, :preserve_root, "root")
+    value = Map.get(object, name, object)
+    xml = to_simple_form(value, name)
     |> Saxy.encode!()
 
     {:ok, xml}
   end
   def serialize(list, _opts) when is_list(list), do: {:error, :cannot_serialize_root_list}
   def serialize(_scalar, _opts), do: {:error, :cannot_serialize_root_scalar}
+
+  @doc """
+  Deserializes the given XML string.
+  Takes an option (`preserve_root`, defaults to false) for hoisting the root element or not
+
+  Returns an `:ok` tuple with the XML serialized to a Map
+
+  ## Examples
+
+  iex> XmlJson.Parker.deserialize("<alice>bob</alice>", preserve_root: true)
+  {:ok, %{"alice" => "bob"}}
+  """
+  def deserialize(xml, opts \\ []) when is_binary(xml) do
+    preserve_root = Keyword.get(opts, :preserve_root, false)
+
+    {:ok, element} = Saxy.parse_string(xml, XmlJson.SaxHandler, [])
+    walked_element = walk_element(element)
+
+    if preserve_root do
+      {:ok, %{element.name => walked_element}}
+    else
+      {:ok, walked_element}
+    end
+  end
 
   defp to_simple_form(object, name) when is_map(object) do
     children = Enum.map(object, fn {k, v} -> to_simple_form(v, k) end)
@@ -32,18 +68,6 @@ defmodule XmlJson.Parker do
     {name, [], [{:characters, to_string(scalar)}]}
   end
 
-  def deserialize(xml, opts \\ []) when is_binary(xml) do
-    preserve_root? = Keyword.get(opts, :preserve_root?, false)
-
-    {:ok, element} = Saxy.parse_string(xml, XmlJson.SaxHandler, [])
-    walked_element = walk_element(element)
-
-    if preserve_root? do
-      {:ok, %{element.name => walked_element}}
-    else
-      {:ok, walked_element}
-    end
-  end
 
   defp walk_element(element) do
     update_children(%{}, element)

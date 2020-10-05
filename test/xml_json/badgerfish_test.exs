@@ -1,6 +1,8 @@
 defmodule XmlJson.BadgerFishTest do
   use ExUnit.Case
 
+  doctest XmlJson.BadgerFish
+
   describe "deserialize" do
     test "element names become object properties" do
       xml = """

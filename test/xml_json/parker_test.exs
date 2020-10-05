@@ -1,6 +1,8 @@
 defmodule XmlJson.ParkerTest do
   use ExUnit.Case
 
+  doctest XmlJson.Parker
+
   describe "deserialize/2" do
     test "root is absorbed" do
       xml = """
@@ -15,7 +17,7 @@ defmodule XmlJson.ParkerTest do
       <root>test</root>
       """
 
-      assert {:ok, %{"root" => "test"}} == XmlJson.Parker.deserialize(xml, preserve_root?: true)
+      assert {:ok, %{"root" => "test"}} == XmlJson.Parker.deserialize(xml, preserve_root: true)
     end
 
     test "element names become object properties" do
@@ -178,6 +180,39 @@ defmodule XmlJson.ParkerTest do
       <root><namespaced:key>true</namespaced:key></root>
       """
       assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
+    end
+
+    test "root is hoisted, if possible (defaults to \"root\")" do
+      object = %{
+        "root" => "true",
+        "invalid_sibling" => "stuff"
+      }
+      xml = """
+      <root>true</root>
+      """
+      assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object)
+    end
+
+    test "root is hoisted, if possible given a custom name" do
+      object = %{
+        "root" => "true",
+        "sibling" => "stuff"
+      }
+      xml = """
+      <sibling>stuff</sibling>
+      """
+      assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object, preserve_root: "sibling")
+    end
+
+    test "root is wrapped, if not possible to hoist given a custom name" do
+      object = %{
+        "root" => "true",
+        "sibling" => "stuff"
+      }
+      xml = """
+      <custom><root>true</root><sibling>stuff</sibling></custom>
+      """
+      assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object, preserve_root: "custom")
     end
   end
 end
