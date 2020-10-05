@@ -4,6 +4,52 @@ defmodule XmlJson.BadgerFish do
 
   http://badgerfish.ning.com/
   """
+  def serialize(object) do
+    [{name, value}] = Map.to_list(object)
+
+    xml = to_simple_form(value, name)
+    |> Saxy.encode!()
+
+    {:ok, xml}
+  end
+
+  defp to_simple_form(object, name) when is_map(object) do
+    attributes_object = Enum.filter(object, fn {k, _v} ->
+      String.starts_with?(k, "@")
+    end)
+    |> Map.new()
+    children_object = Map.drop(object, Map.keys(attributes_object))
+
+    attributes = Enum.map(attributes_object, &to_simple_attribute/1)
+    |> List.flatten()
+
+    children = Enum.map(children_object, fn {k, v} -> to_simple_form(v, k) end)
+    |> List.flatten()
+
+    {name, attributes, children}
+  end
+  defp to_simple_form(list, name) when is_list(list) do
+    Enum.map(list, fn item -> to_simple_form(item, name) end)
+  end
+  defp to_simple_form(nil, name) do
+    {name, [], []}
+  end
+  defp to_simple_form(scalar, "$") do
+    {:characters, to_string(scalar)}
+  end
+  defp to_simple_form(scalar, name) do
+    {name, [], [{:characters, to_string(scalar)}]}
+  end
+
+  defp to_simple_attribute({"@xmlns", value}) do
+    Enum.map(value, fn
+      {"$", v} -> {"xmlns", v}
+      {k, v} -> {"xmlns:" <> k, v}
+    end)
+  end
+  defp to_simple_attribute({name, value}) do
+    {String.trim(name, "@"), value}
+  end
 
   def deserialize(xml) when is_binary(xml) do
     {:ok, element} = Saxy.parse_string(xml, XmlJson.SaxHandler, [])

@@ -135,4 +135,117 @@ defmodule XmlJson.BadgerFishTest do
               }} == XmlJson.BadgerFish.deserialize(xml)
     end
   end
+
+  describe "serialize/1" do
+    test "object properties become element names" do
+      object = %{
+        "root" => %{
+          "dog" => %{"piglet" => %{"$" => "cat"}, "doglet" => %{"$" => "puppy"}},
+          "horse" => %{"$" => "fifteen"}
+        }
+      }
+
+      xml = """
+      <root><dog><doglet>puppy</doglet><piglet>cat</piglet></dog><horse>fifteen</horse></root>
+      """
+
+      assert {:ok, String.trim(xml)} == XmlJson.BadgerFish.serialize(object)
+    end
+
+    test "the dollar properties of an element go into the text of an element" do
+      object = %{"alice" => %{"$" => "bob"}}
+      xml = """
+      <alice>bob</alice>
+      """
+
+      assert {:ok, String.trim(xml)} == XmlJson.BadgerFish.serialize(object)
+    end
+
+    test "nested properties become nested elements" do
+      object = %{
+        "alice" => %{
+          "bob" => %{
+            "$" => "charlie"
+          },
+          "david" => %{
+            "$" => "edgar"
+          }
+        }
+      }
+      xml = """
+      <alice><bob>charlie</bob><david>edgar</david></alice>
+      """
+
+      assert {:ok, String.trim(xml)} == XmlJson.BadgerFish.serialize(object)
+    end
+
+    test "properties starting with `@` become attributes" do
+      object = %{"alice" => %{"$" => "bob", "@charlie" => "david"}}
+
+      xml = """
+      <alice charlie="david">bob</alice>
+      """
+
+      assert {:ok, String.trim(xml)} == XmlJson.BadgerFish.serialize(object)
+    end
+
+    test "the default namespace is applied, if provided" do
+      object = %{"alice" => %{"$" => "bob", "@xmlns" => %{"$" => "http:\/\/some-namespace"}}}
+
+      xml = """
+      <alice xmlns="http:\/\/some-namespace">bob</alice>
+      """
+
+      assert {:ok, String.trim(xml)} == XmlJson.BadgerFish.serialize(object)
+    end
+
+    test "other namespaces are handled too" do
+      object = %{
+        "alice" => %{
+          "$" => "bob",
+          "@xmlns" => %{
+            "$" => "http:\/\/some-namespace",
+            "charlie" => "http:\/\/some-other-namespace"
+          }
+        }
+      }
+
+      xml = """
+      <alice xmlns="http:\/\/some-namespace" xmlns:charlie="http:\/\/some-other-namespace">bob</alice>
+      """
+
+      assert {:ok, String.trim(xml)} == XmlJson.BadgerFish.serialize(object)
+    end
+
+    test "nested applications of xml namespaces are not repeated" do
+      object = %{
+        "alice" => %{
+          "bob" => %{
+            "$" => "david",
+            "@xmlns" => %{
+              "charlie" => "http:\/\/some-other-namespace",
+              "$" => "http:\/\/some-namespace"
+            }
+          },
+          "charlie:edgar" => %{
+            "$" => "frank",
+            "@xmlns" => %{
+              "charlie" => "http:\/\/some-other-namespace",
+              "$" => "http:\/\/some-namespace"
+            }
+          },
+          "@xmlns" => %{
+            "charlie" => "http:\/\/some-other-namespace",
+            "$" => "http:\/\/some-namespace"
+          }
+        }
+      }
+
+      xml = """
+      <alice xmlns="http://some-namespace" xmlns:charlie="http://some-other-namespace"><bob>david</bob><charlie:edgar>frank</charlie:edgar></alice>
+      """
+
+      assert {:ok, String.trim(xml)} == XmlJson.BadgerFish.serialize(object)
+    end
+  end
 end

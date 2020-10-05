@@ -81,7 +81,8 @@ defmodule XmlJson.ParkerTest do
       assert {:ok, %{"ding:dong" => "binnen"}} == XmlJson.Parker.deserialize(xml)
     end
   end
-  describe "serialize/1" do
+
+  describe "serialize/2" do
     test "root scalars are treated as lossy" do
       assert {:error, _} = XmlJson.Parker.serialize("dog")
     end
