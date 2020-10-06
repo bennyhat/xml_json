@@ -29,7 +29,7 @@ defmodule XmlJson.BadgerFish do
   @doc """
   Deserializes the given XML string.
 
-  Returns an `:ok` tuple with the XML serialized to a Map
+  Returns an `:ok` tuple with the XML deserialized to a Map
 
   ## Examples
 

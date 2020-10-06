@@ -37,7 +37,7 @@ defmodule XmlJson.Parker do
   Deserializes the given XML string.
   Takes an option (`preserve_root`, defaults to false) for hoisting the root element or not
 
-  Returns an `:ok` tuple with the XML serialized to a Map
+  Returns an `:ok` tuple with the XML deserialized to a Map
 
   ## Examples
 
