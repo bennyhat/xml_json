@@ -116,6 +116,7 @@ defmodule XmlJson.BadgerFish do
 
   defp update_children(badgerfish, _no_children), do: badgerfish
   defp update_text(badgerfish, %{text: ""}), do: badgerfish
+  defp update_text(badgerfish, %{text: "\n"}), do: badgerfish
 
   defp update_text(badgerfish, %{text: text}) do
     Map.put(badgerfish, "$", text)

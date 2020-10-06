@@ -136,6 +136,18 @@ defmodule XmlJson.BadgerFishTest do
                 }
               }} == XmlJson.BadgerFish.deserialize(xml)
     end
+
+    test "newlines that are alone are absorbed" do
+      xml = """
+      <dog>
+      </dog>
+      """
+
+      assert {:ok,
+              %{
+                "dog" => %{}
+              }} == XmlJson.BadgerFish.deserialize(xml)
+    end
   end
 
   describe "serialize/1" do
