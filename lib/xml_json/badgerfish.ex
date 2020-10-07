@@ -5,6 +5,11 @@ defmodule XmlJson.BadgerFish do
   http://www.sklar.com/badgerfish/
   """
 
+  @default_opts %{
+    exclude_namespaces: false,
+    ns_keys: []
+  }
+
   @doc """
   Serializes the given Map.
 
@@ -16,11 +21,13 @@ defmodule XmlJson.BadgerFish do
       {:ok, "<alice>bob</alice>"}
 
   """
-  def serialize(object) do
+  def serialize(object, opts \\ [])
+  def serialize(object, opts) when not is_map(opts), do: serialize(object, Map.merge(@default_opts, Map.new(opts)))
+  def serialize(object, opts) do
     [{name, value}] = Map.to_list(object)
 
     xml =
-      to_simple_form(value, name)
+      to_simple_form(value, name, opts)
       |> Saxy.encode!()
 
     {:ok, xml}
@@ -37,60 +44,50 @@ defmodule XmlJson.BadgerFish do
       {:ok, %{"alice" => %{"$" => "bob"}}}
 
   """
-  def deserialize(xml) when is_binary(xml) do
+  def deserialize(xml) do
     {:ok, element} = Saxy.parse_string(xml, XmlJson.SaxHandler, [])
     {:ok, %{element.name => walk_element(element)}}
   end
 
-  defp to_simple_form(object, name, ns_keys \\ [])
+  defp to_simple_form(object, name, opts)
 
-  defp to_simple_form(object, name, ns_keys) when is_map(object) do
-    attributes_object =
-      Enum.filter(object, fn {k, _v} ->
-        String.starts_with?(k, "@")
-      end)
-      |> Map.new()
-
-    children_object = Map.drop(object, Map.keys(attributes_object) ++ ns_keys)
-
+  defp to_simple_form(object, name, opts) when is_map(object) do
     attributes =
-      Enum.map(attributes_object, &to_simple_attribute/1)
+      Enum.filter(object, &is_attribute_we_want?(&1, opts))
+      |> Enum.map(&to_simple_attribute/1)
       |> List.flatten()
-      |> Enum.reject(fn {k, _v} -> k in ns_keys end)
+      |> Enum.reject(&is_namespace_we_have_seen?(&1, opts))
 
-    new_ns_keys =
-      Enum.filter(attributes, fn
-        {"xmlns" <> _rest, _v} -> true
-        _ -> false
-      end)
-      |> Enum.map(fn {k, _v} -> k end)
-
-    child_ns_keys = new_ns_keys ++ ns_keys
+    child_opts = Map.merge(opts, %{
+        ns_keys: seen_namespace_keys(attributes, opts)
+      }
+    )
 
     children =
-      Enum.map(children_object, &to_simple_child(&1, child_ns_keys))
+      Enum.reject(object, &is_attribute?/1)
+      |> Enum.map(&to_simple_child(&1, child_opts))
       |> List.flatten()
 
     {name, attributes, children}
   end
 
-  defp to_simple_form(list, name, ns_keys) when is_list(list) do
-    Enum.map(list, fn item -> to_simple_form(item, name, ns_keys) end)
+  defp to_simple_form(list, name, opts) when is_list(list) do
+    Enum.map(list, fn item -> to_simple_form(item, name, opts) end)
   end
 
-  defp to_simple_form(nil, name, _ns_keys) do
+  defp to_simple_form(nil, name, _opts) do
     {name, [], []}
   end
 
-  defp to_simple_form(scalar, "$", _ns_keys) do
+  defp to_simple_form(scalar, "$", _opts) do
     {:characters, to_string(scalar)}
   end
 
-  defp to_simple_form(scalar, name, _ns_keys) do
+  defp to_simple_form(scalar, name, _opts) do
     {name, [], [{:characters, to_string(scalar)}]}
   end
 
-  defp to_simple_child({k, v}, ns_keys), do: to_simple_form(v, k, ns_keys)
+  defp to_simple_child({k, v}, opts), do: to_simple_form(v, k, opts)
 
   defp to_simple_attribute({"@xmlns", value}) do
     Enum.map(value, fn
@@ -143,6 +140,28 @@ defmodule XmlJson.BadgerFish do
   end
 
   defp handle_namespaces(key, value), do: {key, value}
+
+  defp is_attribute?({key, _v}) do
+    String.starts_with?(key, "@")
+  end
+  defp is_attribute_we_want?({k, _v} = kv, %{exclude_namespaces: true}) do
+    is_attribute?(kv) and k != "@xmlns"
+  end
+  defp is_attribute_we_want?(kv, _opts), do: is_attribute?(kv)
+  defp is_namespace_we_have_seen?({k, _v}, %{ns_keys: ns_keys}) do
+    k in ns_keys
+  end
+
+  defp seen_namespace_keys(attributes, %{ns_keys: ns_keys}) do
+    new_ns_keys =
+      Enum.filter(attributes, fn
+        {"xmlns" <> _rest, _v} -> true
+        _ -> false
+      end)
+      |> Enum.map(fn {k, _v} -> k end)
+
+    new_ns_keys ++ ns_keys
+  end
 
   defp accumulate_children(badgerfish, children) do
     Enum.reduce(children, badgerfish, fn element, object ->

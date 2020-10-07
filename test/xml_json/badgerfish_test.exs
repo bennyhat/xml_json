@@ -264,5 +264,37 @@ defmodule XmlJson.BadgerFishTest do
 
       assert {:ok, String.trim(xml)} == XmlJson.BadgerFish.serialize(object)
     end
+
+    test "namespaces can be excluded through an option" do
+      object = %{
+        "alice" => %{
+          "bob" => %{
+            "$" => "david",
+            "@xmlns" => %{
+              "charlie" => "http:\/\/some-other-namespace",
+              "$" => "http:\/\/some-namespace"
+            }
+          },
+          "charlie:edgar" => %{
+            "$" => "frank",
+            "@xmlns" => %{
+              "charlie" => "http:\/\/some-other-namespace",
+              "$" => "http:\/\/some-namespace",
+              "chet" => "http:\/\/namespace.example.com"
+            }
+          },
+          "@xmlns" => %{
+            "charlie" => "http:\/\/some-other-namespace",
+            "$" => "http:\/\/some-namespace"
+          }
+        }
+      }
+
+      xml = """
+      <alice><bob>david</bob><charlie:edgar>frank</charlie:edgar></alice>
+      """
+
+      assert {:ok, String.trim(xml)} == XmlJson.BadgerFish.serialize(object, exclude_namespaces: true)
+    end
   end
 end
