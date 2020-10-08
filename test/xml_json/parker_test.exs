@@ -93,12 +93,12 @@ defmodule XmlJson.ParkerTest do
   end
 
   describe "serialize/2" do
-    test "root scalars are treated as lossy" do
-      assert {:error, _} = XmlJson.Parker.serialize("dog")
+    test "root scalars are wrapped in a root element by default" do
+      assert {:ok, "<root>dog</root>"} = XmlJson.Parker.serialize("dog")
     end
 
-    test "root lists are treated as lossy" do
-      assert {:error, _} = XmlJson.Parker.serialize([1, 2, 3])
+    test "root lists are wrapped in a root element by default" do
+      assert {:ok, "<root>1,2,3</root>"} = XmlJson.Parker.serialize([1, 2, 3])
     end
 
     test "object properties become (\"sorted\" via Map) element names under a default root" do

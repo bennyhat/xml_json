@@ -41,10 +41,10 @@ defmodule XmlJson.BadgerFish do
   def deserialize(xml, opts \\ [])
   def deserialize(xml, opts), do: Deserializer.deserialize(xml, merge_default_options(opts))
 
-  defp merge_default_options(provided) when is_map(provided) do
+  def merge_default_options(provided) when is_map(provided) do
     Map.merge(@default_opts, provided)
   end
-  defp merge_default_options(provided) do
+  def merge_default_options(provided) do
     merge_default_options(Map.new(provided))
   end
 end
