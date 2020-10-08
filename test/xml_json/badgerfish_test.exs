@@ -313,7 +313,8 @@ defmodule XmlJson.BadgerFishTest do
       <alice><bob>david</bob><charlie:edgar>frank</charlie:edgar></alice>
       """
 
-      assert {:ok, String.trim(xml)} == XmlJson.BadgerFish.serialize(object, exclude_namespaces: true)
+      assert {:ok, String.trim(xml)} ==
+               XmlJson.BadgerFish.serialize(object, exclude_namespaces: true)
     end
   end
 end

@@ -23,6 +23,7 @@ defmodule XmlJson.Parker do
       {:ok, "<alice>bob</alice>"}
 
   """
+  @spec serialize(map(), map() | keyword()) :: {:ok, binary()}
   def serialize(object, opts \\ [])
   def serialize(object, opts), do: Serializer.serialize(object, opts)
 
@@ -41,7 +42,7 @@ defmodule XmlJson.Parker do
       {:ok, %{"alice" => "bob"}}
 
   """
+  @spec deserialize(binary(), map() | keyword()) :: {:ok, map()}
   def deserialize(xml, opts \\ [])
   def deserialize(xml, opts), do: Deserializer.deserialize(xml, opts)
-
 end

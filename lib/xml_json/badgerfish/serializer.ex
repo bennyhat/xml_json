@@ -12,6 +12,7 @@ defmodule XmlJson.BadgerFish.Serializer do
 
     {:ok, xml}
   end
+
   defp to_simple_form(object, name, opts)
 
   defp to_simple_form(object, name, opts) when is_map(object) do
@@ -21,10 +22,10 @@ defmodule XmlJson.BadgerFish.Serializer do
       |> List.flatten()
       |> Enum.reject(&is_namespace_we_have_seen?(&1, opts))
 
-    child_opts = Map.merge(opts, %{
+    child_opts =
+      Map.merge(opts, %{
         ns_keys: seen_namespace_keys(attributes, opts)
-      }
-    )
+      })
 
     children =
       Enum.reject(object, &is_attribute?/1)
@@ -66,10 +67,13 @@ defmodule XmlJson.BadgerFish.Serializer do
   defp is_attribute?({key, _v}) do
     String.starts_with?(key, "@")
   end
+
   defp is_attribute_we_want?({k, _v} = kv, %{exclude_namespaces: true}) do
     is_attribute?(kv) and k != "@xmlns"
   end
+
   defp is_attribute_we_want?(kv, _opts), do: is_attribute?(kv)
+
   defp is_namespace_we_have_seen?({k, _v}, %{ns_keys: ns_keys}) do
     k in ns_keys
   end

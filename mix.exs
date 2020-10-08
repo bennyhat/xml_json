@@ -14,7 +14,8 @@ defmodule XmlJson.MixProject do
       docs: docs(),
       package: package(),
       name: "XmlJson",
-      source_url: @source_url
+      source_url: @source_url,
+      dialyzer: [plt_file: {:no_warn, ".dialyzer/#{System.version()}.plt"}]
     ]
   end
 
@@ -27,6 +28,7 @@ defmodule XmlJson.MixProject do
   defp deps do
     [
       {:saxy, "~> 1.2"},
+      {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false}
     ]
   end

@@ -8,6 +8,14 @@ defmodule XmlJson.BadgerFish do
   alias XmlJson.BadgerFish.Deserializer
   alias XmlJson.BadgerFish.Serializer
 
+  @type badgerfish_options ::
+          %{
+            exclude_namespaces: boolean()
+          }
+          | [
+              exclude_namespaces: boolean()
+            ]
+
   @default_opts %{
     exclude_namespaces: false,
     ns_keys: []
@@ -27,6 +35,7 @@ defmodule XmlJson.BadgerFish do
       {:ok, "<alice>bob</alice>"}
 
   """
+  @spec serialize(map(), badgerfish_options()) :: {:ok, binary()}
   def serialize(object, opts \\ [])
   def serialize(object, opts), do: Serializer.serialize(object, merge_default_options(opts))
 
@@ -44,12 +53,14 @@ defmodule XmlJson.BadgerFish do
       {:ok, %{"alice" => %{"$" => "bob"}}}
 
   """
+  @spec deserialize(binary(), badgerfish_options()) :: {:ok, map()}
   def deserialize(xml, opts \\ [])
   def deserialize(xml, opts), do: Deserializer.deserialize(xml, merge_default_options(opts))
 
   def merge_default_options(provided) when is_map(provided) do
     Map.merge(@default_opts, provided)
   end
+
   def merge_default_options(provided) do
     merge_default_options(Map.new(provided))
   end

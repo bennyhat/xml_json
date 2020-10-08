@@ -3,10 +3,19 @@ defmodule XmlJson.Parker.Serializer do
   Parker implementation of deserialization from a Xml into Map
   """
 
+  @type parker_serializer_options ::
+          %{
+            preserve_root: binary()
+          }
+          | [
+              preserve_root: binary()
+            ]
+
   @default_opts %{
     preserve_root: "root"
   }
 
+  @spec serialize(map(), parker_serializer_options()) :: {:ok, binary()}
   def serialize(object, opts) do
     merged_options = merge_default_options(opts)
     {name, value} = root_map_form(object, merged_options)
@@ -22,9 +31,11 @@ defmodule XmlJson.Parker.Serializer do
     value = Map.get(object, name, object)
     {name, value}
   end
+
   defp root_map_form(list, %{preserve_root: name}) when is_list(list) do
     {name, Enum.join(list, ",")}
   end
+
   defp root_map_form(value, %{preserve_root: name}) do
     {name, to_string(value)}
   end
@@ -52,6 +63,7 @@ defmodule XmlJson.Parker.Serializer do
   def merge_default_options(provided) when is_map(provided) do
     Map.merge(@default_opts, provided)
   end
+
   def merge_default_options(provided) do
     merge_default_options(Map.new(provided))
   end

@@ -43,6 +43,7 @@ defmodule XmlJson.BadgerFish.Deserializer do
   defp maybe_exclude_namespaces(attributes, %{exclude_namespaces: true}) do
     Map.delete(attributes, "@xmlns")
   end
+
   defp maybe_exclude_namespaces(attributes, _opts), do: attributes
 
   defp handle_namespaces("xmlns", value) do
