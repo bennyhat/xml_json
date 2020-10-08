@@ -60,11 +60,11 @@ defmodule XmlJson.Parker.Serializer do
     {name, [], [{:characters, to_string(scalar)}]}
   end
 
-  def merge_default_options(provided) when is_map(provided) do
+  defp merge_default_options(provided) when is_map(provided) do
     Map.merge(@default_opts, provided)
   end
 
-  def merge_default_options(provided) do
+  defp merge_default_options(provided) do
     merge_default_options(Map.new(provided))
   end
 end

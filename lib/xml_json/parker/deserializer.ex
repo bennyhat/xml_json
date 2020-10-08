@@ -67,11 +67,11 @@ defmodule XmlJson.Parker.Deserializer do
 
   defp maybe_hoist_children(parker), do: parker
 
-  def merge_default_options(provided) when is_map(provided) do
+  defp merge_default_options(provided) when is_map(provided) do
     Map.merge(@default_opts, provided)
   end
 
-  def merge_default_options(provided) do
+  defp merge_default_options(provided) do
     merge_default_options(Map.new(provided))
   end
 end
