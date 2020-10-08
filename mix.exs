@@ -1,6 +1,8 @@
 defmodule XmlJson.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/bennyhat/xml_json"
+
   def project do
     [
       app: :xml_json,
@@ -12,7 +14,7 @@ defmodule XmlJson.MixProject do
       docs: docs(),
       package: package(),
       name: "XmlJson",
-      source_url: "https://github.com/bennyhat/xml_json"
+      source_url: @source_url
     ]
   end
 
@@ -35,10 +37,11 @@ defmodule XmlJson.MixProject do
 
   defp docs() do
     [
-      source_url: "https://github.com/bennyhat/xml_json",
-      extras: ["README.md"],
       main: "readme",
-      source_url_pattern: "https://github.com/bennyhat/xml_json/blob/master/%{path}#L%{line}"
+      canonical: "http://hexdocs.pm/xml_json",
+      source_url: @source_url,
+      source_url_pattern: "#{@source_url}/xml_json/blob/master/%{path}#L%{line}",
+      extras: ["README.md", "LICENSE"]
     ]
   end
 
@@ -46,7 +49,7 @@ defmodule XmlJson.MixProject do
     [
       maintainers: ["bennyhat"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/bennyhat/xml_json"}
+      links: %{"GitHub" => @source_url}
     ]
   end
 end
