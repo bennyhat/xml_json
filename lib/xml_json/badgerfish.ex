@@ -16,7 +16,7 @@ defmodule XmlJson.BadgerFish do
   @doc """
   Serializes the given Map.
 
-  Returns an `:ok` tuple with the Map serialized to XML
+  Returns an `:ok` tuple with a Map serialized to XML
 
   ## Examples
 
@@ -25,8 +25,7 @@ defmodule XmlJson.BadgerFish do
 
   """
   def serialize(object, opts \\ [])
-  def serialize(object, opts) when not is_map(opts), do: Serializer.serialize(object, Map.merge(@default_opts, Map.new(opts)))
-  def serialize(object, opts) when is_map(opts), do: Serializer.serialize(object, Map.merge(@default_opts, opts))
+  def serialize(object, opts), do: Serializer.serialize(object, merge_default_options(opts))
 
   @doc """
   Deserializes the given XML string.
@@ -40,7 +39,12 @@ defmodule XmlJson.BadgerFish do
 
   """
   def deserialize(xml, opts \\ [])
-  def deserialize(xml, opts) when not is_map(opts), do: Deserializer.deserialize(xml, Map.merge(@default_opts, Map.new(opts)))
-  def deserialize(xml, opts) when is_map(opts), do: Deserializer.deserialize(xml, Map.merge(@default_opts, opts))
+  def deserialize(xml, opts), do: Deserializer.deserialize(xml, merge_default_options(opts))
 
+  defp merge_default_options(provided) when is_map(provided) do
+    Map.merge(@default_opts, provided)
+  end
+  defp merge_default_options(provided) do
+    merge_default_options(Map.new(provided))
+  end
 end
