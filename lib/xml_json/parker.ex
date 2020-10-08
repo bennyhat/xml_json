@@ -16,6 +16,9 @@ defmodule XmlJson.Parker do
 
   ## Examples
 
+      iex> XmlJson.Parker.serialize(%{"alice" => "bob"})
+      {:ok, "<root><alice>bob</alice></root>"}
+
       iex> XmlJson.Parker.serialize(%{"alice" => "bob"}, preserve_root: "alice")
       {:ok, "<alice>bob</alice>"}
 
@@ -30,6 +33,9 @@ defmodule XmlJson.Parker do
   Returns an `:ok` tuple with the XML deserialized to a Map
 
   ## Examples
+
+      iex> XmlJson.Parker.deserialize("<alice>bob</alice>")
+      {:ok, "bob"}
 
       iex> XmlJson.Parker.deserialize("<alice>bob</alice>", preserve_root: true)
       {:ok, %{"alice" => "bob"}}

@@ -23,6 +23,9 @@ defmodule XmlJson.BadgerFish do
       iex> XmlJson.BadgerFish.serialize(%{"alice" => %{"$" => "bob"}})
       {:ok, "<alice>bob</alice>"}
 
+      iex> XmlJson.BadgerFish.serialize(%{"alice" => %{"$" => "bob", "@xmlns" => %{"$" => "https://default.example.com"}}}, exclude_namespaces: true)
+      {:ok, "<alice>bob</alice>"}
+
   """
   def serialize(object, opts \\ [])
   def serialize(object, opts), do: Serializer.serialize(object, merge_default_options(opts))
@@ -35,6 +38,9 @@ defmodule XmlJson.BadgerFish do
   ## Examples
 
       iex> XmlJson.BadgerFish.deserialize("<alice>bob</alice>")
+      {:ok, %{"alice" => %{"$" => "bob"}}}
+
+      iex> XmlJson.BadgerFish.deserialize("<alice xmlns=\\"https://default.example.com\\">bob</alice>", exclude_namespaces: true)
       {:ok, %{"alice" => %{"$" => "bob"}}}
 
   """
