@@ -3,23 +3,23 @@ defmodule XmlJson.BadgerFish.Deserializer do
   Badgerfish implementation of deserialization from a Xml into Map
   """
 
-  def deserialize(xml, _opts) do
+  def deserialize(xml, opts) do
     {:ok, element} = Saxy.parse_string(xml, XmlJson.SaxHandler, [])
-    {:ok, %{element.name => walk_element(element)}}
+    {:ok, %{element.name => walk_element(element, opts)}}
   end
 
-  defp walk_element(element) do
-    update_children(%{}, element)
+  defp walk_element(element, opts) do
+    update_children(%{}, element, opts)
     |> update_text(element)
-    |> update_attributes(element)
+    |> update_attributes(element, opts)
   end
 
-  defp update_children(badgerfish, %{children: children}) do
-    accumulate_children(badgerfish, children)
+  defp update_children(badgerfish, %{children: children}, opts) do
+    accumulate_children(badgerfish, children, opts)
     |> Map.delete("$")
   end
 
-  defp update_children(badgerfish, _no_children), do: badgerfish
+  defp update_children(badgerfish, _no_children, _opts), do: badgerfish
   defp update_text(badgerfish, %{text: ""}), do: badgerfish
   defp update_text(badgerfish, %{text: "\n"}), do: badgerfish
 
@@ -29,7 +29,7 @@ defmodule XmlJson.BadgerFish.Deserializer do
 
   defp update_text(badgerfish, _empty_element), do: badgerfish
 
-  defp update_attributes(badgerfish, element) do
+  defp update_attributes(badgerfish, element, opts) do
     Enum.reduce(element.attributes, badgerfish, fn {k, v}, a ->
       {k, v} = handle_namespaces(k, v)
 
@@ -37,7 +37,13 @@ defmodule XmlJson.BadgerFish.Deserializer do
         Map.merge(current, v)
       end)
     end)
+    |> maybe_exclude_namespaces(opts)
   end
+
+  defp maybe_exclude_namespaces(attributes, %{exclude_namespaces: true}) do
+    Map.delete(attributes, "@xmlns")
+  end
+  defp maybe_exclude_namespaces(attributes, _opts), do: attributes
 
   defp handle_namespaces("xmlns", value) do
     {"xmlns", %{"$" => value}}
@@ -49,9 +55,9 @@ defmodule XmlJson.BadgerFish.Deserializer do
 
   defp handle_namespaces(key, value), do: {key, value}
 
-  defp accumulate_children(badgerfish, children) do
+  defp accumulate_children(badgerfish, children, opts) do
     Enum.reduce(children, badgerfish, fn element, object ->
-      walked = walk_element(element)
+      walked = walk_element(element, opts)
 
       Map.update(object, element.name, walked, &accumulate_list(&1, walked))
     end)
