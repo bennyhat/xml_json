@@ -3,30 +3,22 @@ defmodule XmlJson.Parker.Serializer do
   Parker implementation of deserialization from a Xml into Map
   """
 
-  @type parker_serializer_options ::
-          %{
-            preserve_root: binary()
-          }
-          | [
-              preserve_root: binary()
-            ]
+  alias XmlJson.SaxHandler
 
-  @default_opts %{
-    preserve_root: "root"
-  }
-
-  @spec serialize(map(), parker_serializer_options()) :: {:ok, binary()}
+  @spec serialize(map(), map()) :: {:ok, binary()}
   def serialize(object, opts) do
-    merged_options = merge_default_options(opts)
-    {name, value} = root_map_form(object, merged_options)
+    {name, value} = root_map_form(object, opts)
+    simple_form = to_simple_form(value, name)
 
-    xml =
-      to_simple_form(value, name)
-      |> Saxy.encode!()
-
-    {:ok, xml}
+    case SaxHandler.encode(simple_form) do
+      {:ok, _} = ok -> ok
+      error -> error
+    end
   end
 
+  defp root_map_form(object, %{preserve_root: false} = opts) do
+    root_map_form(object, Map.put(opts, :preserve_root, "root"))
+  end
   defp root_map_form(object, %{preserve_root: name}) when is_map(object) do
     value = Map.get(object, name, object)
     {name, value}
@@ -58,13 +50,5 @@ defmodule XmlJson.Parker.Serializer do
 
   defp to_simple_form(scalar, name) do
     {name, [], [{:characters, to_string(scalar)}]}
-  end
-
-  defp merge_default_options(provided) when is_map(provided) do
-    Map.merge(@default_opts, provided)
-  end
-
-  defp merge_default_options(provided) do
-    merge_default_options(Map.new(provided))
   end
 end

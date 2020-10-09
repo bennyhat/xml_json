@@ -3,31 +3,18 @@ defmodule XmlJson.Parker.Deserializer do
   Parker implementation of deserialization from a Xml into Map
   """
 
-  @type parker_deserializer_options ::
-          %{
-            preserve_root: boolean()
-          }
-          | [
-              preserve_root: boolean()
-            ]
+  alias XmlJson.SaxHandler
 
-  @default_opts %{
-    preserve_root: false
-  }
-
-  @spec deserialize(binary(), parker_deserializer_options()) :: {:ok, map()}
+  @spec deserialize(binary(), map()) :: {:ok, map()} | {:error, Saxy.ParseError.t()}
   def deserialize(xml, opts) do
-    merged_options = merge_default_options(opts)
-    {:ok, element} = Saxy.parse_string(xml, XmlJson.SaxHandler, [])
-
-    walk_element(element)
-    |> maybe_preserve_root(element, merged_options)
+    case SaxHandler.parse_string(xml) do
+      {:ok, element} ->
+        walk_element(element)
+        |> maybe_preserve_root(element, opts)
+      error -> error
+    end
   end
 
-  defp maybe_preserve_root(element, original, %{preserve_root: true}),
-    do: {:ok, %{original.name => element}}
-
-  defp maybe_preserve_root(element, _original, _opts), do: {:ok, element}
 
   defp walk_element(element) do
     update_children(%{}, element)
@@ -67,11 +54,8 @@ defmodule XmlJson.Parker.Deserializer do
 
   defp maybe_hoist_children(parker), do: parker
 
-  defp merge_default_options(provided) when is_map(provided) do
-    Map.merge(@default_opts, provided)
-  end
+  defp maybe_preserve_root(element, original, %{preserve_root: true}),
+    do: {:ok, %{original.name => element}}
 
-  defp merge_default_options(provided) do
-    merge_default_options(Map.new(provided))
-  end
+  defp maybe_preserve_root(element, _original, _opts), do: {:ok, element}
 end

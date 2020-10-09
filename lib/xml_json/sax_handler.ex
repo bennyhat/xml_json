@@ -4,6 +4,23 @@ defmodule XmlJson.SaxHandler do
   """
   @behaviour Saxy.Handler
 
+  def parse_string(xml) do
+    case Saxy.parse_string(xml, __MODULE__, []) do
+      {:ok, _} = ok -> ok
+      {:halt, state, rest} ->
+        {:error, "Deserialization failed while walking XML. Failed with state of #{inspect(state)} and remaining XML of #{inspect(rest)}"}
+      {:error, _} = error -> error
+    end
+  end
+
+  def encode(simple_form) do
+    xml = Saxy.encode!(simple_form)
+    {:ok, xml}
+  rescue
+    e ->
+      {:error, e}
+  end
+
   def handle_event(:start_document, _prolog, _state) do
     {:ok, [%{attributes: []}]}
   end
@@ -62,10 +79,6 @@ defmodule XmlJson.SaxHandler do
   defp boolean_parse("false"), do: false
   defp boolean_parse(_), do: :error
 
-  defp is_ns_attr?({"xmlns", _v}), do: true
-  defp is_ns_attr?({"xmlns:" <> _rest, _v}), do: true
-  defp is_ns_attr?(_), do: false
-
   defp integer_parse(value) do
     case Integer.parse(value) do
       {parsed, ""} -> parsed
@@ -79,4 +92,8 @@ defmodule XmlJson.SaxHandler do
       _ -> :error
     end
   end
+
+  defp is_ns_attr?({"xmlns", _v}), do: true
+  defp is_ns_attr?({"xmlns:" <> _rest, _v}), do: true
+  defp is_ns_attr?(_), do: false
 end

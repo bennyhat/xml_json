@@ -39,6 +39,15 @@ defmodule XmlJson.BadgerFish do
   def serialize(object, opts \\ [])
   def serialize(object, opts), do: Serializer.serialize(object, merge_default_options(opts))
 
+  @spec serialize!(map(), badgerfish_options()) :: binary()
+  def serialize!(map, opts \\ [])
+  def serialize!(map, opts) do
+    case serialize(map, opts) do
+      {:ok, xml} -> xml
+      {:error, reason} -> raise reason
+    end
+  end
+
   @doc """
   Deserializes the given XML string.
 
@@ -56,6 +65,15 @@ defmodule XmlJson.BadgerFish do
   @spec deserialize(binary(), badgerfish_options()) :: {:ok, map()}
   def deserialize(xml, opts \\ [])
   def deserialize(xml, opts), do: Deserializer.deserialize(xml, merge_default_options(opts))
+
+  @spec deserialize!(binary(), badgerfish_options()) :: map()
+  def deserialize!(xml, opts \\ [])
+  def deserialize!(xml, opts) do
+    case deserialize(xml, opts) do
+      {:ok, element} -> element
+      {:error, reason} -> raise reason
+    end
+  end
 
   defp merge_default_options(provided) when is_map(provided) do
     Map.merge(@default_opts, provided)

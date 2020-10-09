@@ -8,6 +8,18 @@ defmodule XmlJson.Parker do
   alias XmlJson.Parker.Deserializer
   alias XmlJson.Parker.Serializer
 
+  @type parker_options ::
+    %{
+      preserve_root: boolean() | binary()
+    }
+    | [
+      preserve_root: boolean() | binary()
+    ]
+
+  @default_opts %{
+    preserve_root: false
+  }
+
   @doc """
   Serializes the given Map.
   Takes an option (`preserve_root`, defaults to "root") for what property to hoist or inject as the root element
@@ -23,9 +35,18 @@ defmodule XmlJson.Parker do
       {:ok, "<alice>bob</alice>"}
 
   """
-  @spec serialize(map(), map() | keyword()) :: {:ok, binary()}
+  @spec serialize(map(), parker_options()) :: {:ok, binary()}
   def serialize(object, opts \\ [])
-  def serialize(object, opts), do: Serializer.serialize(object, opts)
+  def serialize(object, opts), do: Serializer.serialize(object, merge_default_options(opts))
+
+  @spec serialize!(map(), parker_options()) :: binary()
+  def serialize!(map, opts \\ [])
+  def serialize!(map, opts) do
+    case serialize(map, opts) do
+      {:ok, xml} -> xml
+      {:error, reason} -> raise reason
+    end
+  end
 
   @doc """
   Deserializes the given XML string.
@@ -42,7 +63,24 @@ defmodule XmlJson.Parker do
       {:ok, %{"alice" => "bob"}}
 
   """
-  @spec deserialize(binary(), map() | keyword()) :: {:ok, map()}
+  @spec deserialize(binary(), parker_options()) :: {:ok, map()}
   def deserialize(xml, opts \\ [])
-  def deserialize(xml, opts), do: Deserializer.deserialize(xml, opts)
+  def deserialize(xml, opts), do: Deserializer.deserialize(xml, merge_default_options(opts))
+
+  @spec deserialize!(binary(), parker_options()) :: map()
+  def deserialize!(xml, opts \\ [])
+  def deserialize!(xml, opts) do
+    case deserialize(xml, opts) do
+      {:ok, element} -> element
+      {:error, reason} -> raise reason
+    end
+  end
+
+  defp merge_default_options(provided) when is_map(provided) do
+    Map.merge(@default_opts, provided)
+  end
+
+  defp merge_default_options(provided) do
+    merge_default_options(Map.new(provided))
+  end
 end

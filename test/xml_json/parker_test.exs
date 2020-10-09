@@ -1,9 +1,18 @@
 defmodule XmlJson.ParkerTest do
   use ExUnit.Case
+  use Placebo
 
   doctest XmlJson.Parker
 
   describe "deserialize/2" do
+    test "returns an error tuple if XML can't be parsed" do
+      xml = """
+      <roottest</root>
+      """
+
+      assert {:error, _} = XmlJson.Parker.deserialize(xml)
+    end
+
     test "root is absorbed" do
       xml = """
       <root>test</root>
@@ -92,13 +101,30 @@ defmodule XmlJson.ParkerTest do
     end
   end
 
+  describe "deserialize!/2" do
+    test "raises an error when XML can't be parsed" do
+      xml = """
+      <roottest</root>
+      """
+      assert_raise(Saxy.ParseError, fn ->
+        XmlJson.Parker.deserialize!(xml)
+      end)
+    end
+  end
+
   describe "serialize/2" do
-    test "root scalars are wrapped in a root element by default" do
-      assert {:ok, "<root>dog</root>"} = XmlJson.Parker.serialize("dog")
+    test "returns an error when XML cannot be formed" do
+      allow Saxy.encode!(any()), exec: fn _-> raise "something unexpected" end
+
+      assert {:error, _} = XmlJson.Parker.serialize(false)
     end
 
-    test "root lists are wrapped in a root element by default" do
-      assert {:ok, "<root>1,2,3</root>"} = XmlJson.Parker.serialize([1, 2, 3])
+    test "root scalars are wrapped in a root element by default" do
+      assert {:ok, "<root>dog</root>"} == XmlJson.Parker.serialize("dog")
+    end
+
+    test "root lists are joined and wrapped in a root element by default" do
+      assert {:ok, "<root>1,2,3</root>"} == XmlJson.Parker.serialize([1, 2, 3])
     end
 
     test "object properties become (\"sorted\" via Map) element names under a default root" do
@@ -228,6 +254,17 @@ defmodule XmlJson.ParkerTest do
       """
 
       assert {:ok, String.trim(xml)} == XmlJson.Parker.serialize(object, preserve_root: "custom")
+    end
+  end
+
+  describe "serialize!/2" do
+    test "raises an error when XML cannot be formed" do
+      error = "something unexpected"
+      allow Saxy.encode!(any()), exec: fn _-> raise error end
+
+      assert_raise(RuntimeError, error, fn ->
+        XmlJson.Parker.serialize!(%{"dog" => "cat"})
+      end)
     end
   end
 end

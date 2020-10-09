@@ -1,9 +1,18 @@
 defmodule XmlJson.BadgerFishTest do
   use ExUnit.Case
+  use Placebo
 
   doctest XmlJson.BadgerFish
 
   describe "deserialize" do
+    test "returns an error tuple if XML can't be parsed" do
+      xml = """
+      <roottest</root>
+      """
+
+      assert {:error, _} = XmlJson.BadgerFish.deserialize(xml)
+    end
+
     test "element names become object properties" do
       xml = """
       <root><dog><piglet>cat</piglet><doglet>puppy</doglet></dog><horse>fifteen</horse></root>
@@ -169,7 +178,24 @@ defmodule XmlJson.BadgerFishTest do
     end
   end
 
+  describe "deserialize!/2" do
+    test "raises an error when XML can't be parsed" do
+      xml = """
+      <roottest</root>
+      """
+      assert_raise(Saxy.ParseError, fn ->
+        XmlJson.BadgerFish.deserialize!(xml)
+      end)
+    end
+  end
+ 
   describe "serialize/1" do
+    test "returns an error when XML cannot be formed" do
+      allow Saxy.encode!(any()), exec: fn _-> raise "something unexpected" end
+
+      assert {:error, _} = XmlJson.BadgerFish.serialize(%{"dog" => "cat"})
+    end
+
     test "object properties become element names" do
       object = %{
         "root" => %{
@@ -315,6 +341,17 @@ defmodule XmlJson.BadgerFishTest do
 
       assert {:ok, String.trim(xml)} ==
                XmlJson.BadgerFish.serialize(object, exclude_namespaces: true)
+    end
+  end
+
+  describe "serialize!/2" do
+    test "raises an error when XML cannot be formed" do
+      error = "something unexpected"
+      allow Saxy.encode!(any()), exec: fn _-> raise error end
+
+      assert_raise(RuntimeError, error, fn ->
+        XmlJson.BadgerFish.serialize!(%{"dog" => "cat"})
+      end)
     end
   end
 end

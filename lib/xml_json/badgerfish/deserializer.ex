@@ -3,9 +3,15 @@ defmodule XmlJson.BadgerFish.Deserializer do
   Badgerfish implementation of deserialization from a Xml into Map
   """
 
+  alias XmlJson.SaxHandler
+
+  @spec deserialize(binary(), map()) :: {:ok, map()}
   def deserialize(xml, opts) do
-    {:ok, element} = Saxy.parse_string(xml, XmlJson.SaxHandler, [])
-    {:ok, %{element.name => walk_element(element, opts)}}
+    case SaxHandler.parse_string(xml) do
+      {:ok, element} ->
+        {:ok, %{element.name => walk_element(element, opts)}}
+      error -> error
+    end
   end
 
   defp walk_element(element, opts) do

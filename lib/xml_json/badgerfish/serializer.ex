@@ -3,14 +3,17 @@ defmodule XmlJson.BadgerFish.Serializer do
   Badgerfish implementation of serialization from a Map into Xml
   """
 
+  alias XmlJson.SaxHandler
+
+  @spec serialize(map(), map()) :: {:ok, binary()}
   def serialize(object, opts) do
     [{name, value}] = Map.to_list(object)
+    simple_form = to_simple_form(value, name, opts)
 
-    xml =
-      to_simple_form(value, name, opts)
-      |> Saxy.encode!()
-
-    {:ok, xml}
+    case SaxHandler.encode(simple_form) do
+      {:ok, _} = ok -> ok
+      error -> error
+    end
   end
 
   defp to_simple_form(object, name, opts)
