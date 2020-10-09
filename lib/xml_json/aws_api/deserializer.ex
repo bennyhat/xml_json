@@ -1,4 +1,4 @@
-defmodule XmlJson.Aws.Deserializer do
+defmodule XmlJson.AwsApi.Deserializer do
   @moduledoc """
   AWS implementation for deserialization from a Xml into Map
   """
@@ -25,6 +25,7 @@ defmodule XmlJson.Aws.Deserializer do
   defp update_children(aws, %{children: children}, opts) do
     accumulate_children(aws, children, opts)
   end
+
   defp update_children(_aws, _no_children, _opts), do: nil
 
   defp update_text(aws, %{text: ""}), do: aws
@@ -52,7 +53,9 @@ defmodule XmlJson.Aws.Deserializer do
         else
           map
         end
-      map -> map
+
+      map ->
+        map
     end
   end
 

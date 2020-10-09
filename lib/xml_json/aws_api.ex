@@ -1,12 +1,13 @@
-defmodule XmlJson.Aws do
+defmodule XmlJson.AwsApi do
   @moduledoc """
   An AWS implementation of XML <=> JSON
 
   Based on various conventions encountered in AWS XML-based APIs
   """
 
-  alias XmlJson.Aws.Deserializer
-  # alias XmlJson.BadgerFish.Serializer
+  alias XmlJson.AwsApi.Deserializer
+  alias XmlJson.AwsApi.Serializer
+  alias XmlJson.AwsApi.ParamsSerializer
 
   # @type badgerfish_options ::
   #         %{
@@ -34,9 +35,13 @@ defmodule XmlJson.Aws do
   #     {:ok, "<alice>bob</alice>"}
 
   # """
-  # @spec serialize(map(), badgerfish_options()) :: {:ok, binary()}
-  # def serialize(object, opts \\ [])
-  # def serialize(object, opts), do: Serializer.serialize(object, merge_default_options(opts))
+  def serialize(object, opts \\[])
+  def serialize(object, opts),
+    do: Serializer.serialize(object, merge_default_options(opts))
+
+  def serialize_as_params(object, opts \\ [])
+  def serialize_as_params(object, opts),
+    do: ParamsSerializer.serialize(object, merge_default_options(opts))
 
   # @spec serialize!(map(), badgerfish_options()) :: binary()
   # def serialize!(map, opts \\ [])
@@ -64,6 +69,7 @@ defmodule XmlJson.Aws do
   """
   @spec deserialize(binary(), map()) :: {:ok, map()}
   def deserialize(xml, opts \\ [])
+
   def deserialize(xml, opts) do
     Deserializer.deserialize(xml, merge_default_options(opts))
   end

@@ -177,6 +177,7 @@ defmodule XmlJson.BadgerFishTest do
       assert {:ok, result} == XmlJson.BadgerFish.deserialize(xml, exclude_namespaces: true)
     end
   end
+
   describe "deserialize!/2" do
     test "raises an error when XML can't be parsed" do
       xml = """
