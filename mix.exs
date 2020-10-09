@@ -30,7 +30,7 @@ defmodule XmlJson.MixProject do
       {:saxy, "~> 1.2"},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false},
-      {:placebo, "~> 1.2", only: :test}
+      {:placebo, "~> 1.2", only: [:dev, :test]}
     ]
   end
 

@@ -9,12 +9,12 @@ defmodule XmlJson.Parker do
   alias XmlJson.Parker.Serializer
 
   @type parker_options ::
-    %{
-      preserve_root: boolean() | binary()
-    }
-    | [
-      preserve_root: boolean() | binary()
-    ]
+          %{
+            preserve_root: boolean() | binary()
+          }
+          | [
+              preserve_root: boolean() | binary()
+            ]
 
   @default_opts %{
     preserve_root: false
@@ -41,6 +41,7 @@ defmodule XmlJson.Parker do
 
   @spec serialize!(map(), parker_options()) :: binary()
   def serialize!(map, opts \\ [])
+
   def serialize!(map, opts) do
     case serialize(map, opts) do
       {:ok, xml} -> xml
@@ -69,6 +70,7 @@ defmodule XmlJson.Parker do
 
   @spec deserialize!(binary(), parker_options()) :: map()
   def deserialize!(xml, opts \\ [])
+
   def deserialize!(xml, opts) do
     case deserialize(xml, opts) do
       {:ok, element} -> element

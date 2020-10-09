@@ -106,6 +106,7 @@ defmodule XmlJson.ParkerTest do
       xml = """
       <roottest</root>
       """
+
       assert_raise(Saxy.ParseError, fn ->
         XmlJson.Parker.deserialize!(xml)
       end)
@@ -114,7 +115,7 @@ defmodule XmlJson.ParkerTest do
 
   describe "serialize/2" do
     test "returns an error when XML cannot be formed" do
-      allow Saxy.encode!(any()), exec: fn _-> raise "something unexpected" end
+      allow Saxy.encode!(any()), exec: fn _ -> raise "something unexpected" end
 
       assert {:error, _} = XmlJson.Parker.serialize(false)
     end
@@ -260,7 +261,7 @@ defmodule XmlJson.ParkerTest do
   describe "serialize!/2" do
     test "raises an error when XML cannot be formed" do
       error = "something unexpected"
-      allow Saxy.encode!(any()), exec: fn _-> raise error end
+      allow Saxy.encode!(any()), exec: fn _ -> raise error end
 
       assert_raise(RuntimeError, error, fn ->
         XmlJson.Parker.serialize!(%{"dog" => "cat"})

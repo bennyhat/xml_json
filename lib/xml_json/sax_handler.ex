@@ -6,10 +6,17 @@ defmodule XmlJson.SaxHandler do
 
   def parse_string(xml) do
     case Saxy.parse_string(xml, __MODULE__, []) do
-      {:ok, _} = ok -> ok
+      {:ok, _} = ok ->
+        ok
+
       {:halt, state, rest} ->
-        {:error, "Deserialization failed while walking XML. Failed with state of #{inspect(state)} and remaining XML of #{inspect(rest)}"}
-      {:error, _} = error -> error
+        {:error,
+         "Deserialization failed while walking XML. Failed with state of #{inspect(state)} and remaining XML of #{
+           inspect(rest)
+         }"}
+
+      {:error, _} = error ->
+        error
     end
   end
 
@@ -84,6 +91,8 @@ defmodule XmlJson.SaxHandler do
       {parsed, ""} -> parsed
       _ -> :error
     end
+  rescue
+    _ -> :error
   end
 
   defp float_parse(value) do
@@ -91,6 +100,8 @@ defmodule XmlJson.SaxHandler do
       {parsed, ""} -> parsed
       _ -> :error
     end
+  rescue
+    _ -> :error
   end
 
   defp is_ns_attr?({"xmlns", _v}), do: true

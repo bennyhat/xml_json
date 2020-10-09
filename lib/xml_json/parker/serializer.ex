@@ -19,6 +19,7 @@ defmodule XmlJson.Parker.Serializer do
   defp root_map_form(object, %{preserve_root: false} = opts) do
     root_map_form(object, Map.put(opts, :preserve_root, "root"))
   end
+
   defp root_map_form(object, %{preserve_root: name}) when is_map(object) do
     value = Map.get(object, name, object)
     {name, value}

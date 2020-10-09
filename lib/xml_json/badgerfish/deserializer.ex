@@ -10,7 +10,9 @@ defmodule XmlJson.BadgerFish.Deserializer do
     case SaxHandler.parse_string(xml) do
       {:ok, element} ->
         {:ok, %{element.name => walk_element(element, opts)}}
-      error -> error
+
+      error ->
+        error
     end
   end
 

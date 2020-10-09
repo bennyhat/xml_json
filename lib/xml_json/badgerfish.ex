@@ -41,6 +41,7 @@ defmodule XmlJson.BadgerFish do
 
   @spec serialize!(map(), badgerfish_options()) :: binary()
   def serialize!(map, opts \\ [])
+
   def serialize!(map, opts) do
     case serialize(map, opts) do
       {:ok, xml} -> xml
@@ -68,6 +69,7 @@ defmodule XmlJson.BadgerFish do
 
   @spec deserialize!(binary(), badgerfish_options()) :: map()
   def deserialize!(xml, opts \\ [])
+
   def deserialize!(xml, opts) do
     case deserialize(xml, opts) do
       {:ok, element} -> element

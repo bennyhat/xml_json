@@ -11,10 +11,11 @@ defmodule XmlJson.Parker.Deserializer do
       {:ok, element} ->
         walk_element(element)
         |> maybe_preserve_root(element, opts)
-      error -> error
+
+      error ->
+        error
     end
   end
-
 
   defp walk_element(element) do
     update_children(%{}, element)
