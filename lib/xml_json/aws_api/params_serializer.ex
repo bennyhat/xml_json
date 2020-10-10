@@ -25,7 +25,11 @@ defmodule XmlJson.AwsApi.ParamsSerializer do
 
     Enum.with_index(v, 1)
     |> Enum.map(fn {v, vi} ->
-      to_params(prefix <> k <> "." <> list_element_name <> "." <> to_string(vi) <> ".", v, child_opts)
+      to_params(
+        prefix <> k <> "." <> list_element_name <> "." <> to_string(vi) <> ".",
+        v,
+        child_opts
+      )
     end)
   end
 

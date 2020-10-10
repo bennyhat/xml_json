@@ -301,7 +301,8 @@ defmodule XmlJson.AwsApiTest do
       <alice><first><bob><second><charlie><first>chet</first></charlie></second></bob></first><first><bob><second><charlie><first>chaz</first></charlie></second></bob></first></alice>
       """
 
-      assert {:ok, String.trim(xml)} == XmlJson.AwsApi.serialize(object, list_element_names: ["first", "second"])
+      assert {:ok, String.trim(xml)} ==
+               XmlJson.AwsApi.serialize(object, list_element_names: ["first", "second"])
     end
   end
 
@@ -369,7 +370,8 @@ defmodule XmlJson.AwsApiTest do
         "List.first.1.DeepList.second.1.DeeperList.first.1.Address" => "value"
       }
 
-      assert {:ok, params} == XmlJson.AwsApi.serialize_as_params(map, list_element_names: ["first", "second"])
+      assert {:ok, params} ==
+               XmlJson.AwsApi.serialize_as_params(map, list_element_names: ["first", "second"])
     end
 
     test "handles a real world example" do
@@ -468,5 +470,4 @@ defmodule XmlJson.AwsApiTest do
       assert {:ok, params} == XmlJson.AwsApi.serialize_as_params(map)
     end
   end
-
 end

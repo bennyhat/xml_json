@@ -35,11 +35,13 @@ defmodule XmlJson.AwsApi do
   #     {:ok, "<alice>bob</alice>"}
 
   # """
-  def serialize(object, opts \\[])
+  def serialize(object, opts \\ [])
+
   def serialize(object, opts),
     do: Serializer.serialize(object, merge_default_options(opts))
 
   def serialize_as_params(object, opts \\ [])
+
   def serialize_as_params(object, opts),
     do: ParamsSerializer.serialize(object, merge_default_options(opts))
 

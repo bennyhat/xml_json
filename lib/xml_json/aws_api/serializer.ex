@@ -29,9 +29,10 @@ defmodule XmlJson.AwsApi.Serializer do
   defp to_simple_form(list, name, opts) when is_list(list) do
     {list_element_name, child_opts} = cycle_list_name(opts)
 
-    children = Enum.reduce(list, [], fn item, acc ->
-      [to_simple_form(item, list_element_name, child_opts) | acc]
-    end)
+    children =
+      Enum.reduce(list, [], fn item, acc ->
+        [to_simple_form(item, list_element_name, child_opts) | acc]
+      end)
 
     {name, [], Enum.reverse(children)}
   end
