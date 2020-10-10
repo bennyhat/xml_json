@@ -237,8 +237,8 @@ defmodule XmlJson.AwsApiTest do
     test "object properties become element names" do
       object = %{
         "root" => %{
-          "dog" => %{"piglet" => %{"$" => "cat"}, "doglet" => %{"$" => "puppy"}},
-          "horse" => %{"$" => "fifteen"}
+          "dog" => %{"piglet" => "cat", "doglet" => "puppy"},
+          "horse" => "fifteen"
         }
       }
 
@@ -249,8 +249,8 @@ defmodule XmlJson.AwsApiTest do
       assert {:ok, String.trim(xml)} == XmlJson.AwsApi.serialize(object)
     end
 
-    test "the dollar properties of an element go into the text of an element" do
-      object = %{"alice" => %{"$" => "bob"}}
+    test "the text of a propert goes into the text of an element" do
+      object = %{"alice" => "bob"}
 
       xml = """
       <alice>bob</alice>
@@ -262,12 +262,8 @@ defmodule XmlJson.AwsApiTest do
     test "nested properties become nested elements" do
       object = %{
         "alice" => %{
-          "bob" => %{
-            "$" => "charlie"
-          },
-          "david" => %{
-            "$" => "edgar"
-          }
+          "bob" => "charlie",
+          "david" => "edgar"
         }
       }
 
@@ -278,107 +274,34 @@ defmodule XmlJson.AwsApiTest do
       assert {:ok, String.trim(xml)} == XmlJson.AwsApi.serialize(object)
     end
 
-    test "properties starting with `@` become attributes" do
-      object = %{"alice" => %{"$" => "bob", "@charlie" => "david"}}
-
-      xml = """
-      <alice charlie="david">bob</alice>
-      """
-
-      assert {:ok, String.trim(xml)} == XmlJson.AwsApi.serialize(object)
-    end
-
-    test "the default namespace is applied, if provided" do
-      object = %{"alice" => %{"$" => "bob", "@xmlns" => %{"$" => "http:\/\/some-namespace"}}}
-
-      xml = """
-      <alice xmlns="http:\/\/some-namespace">bob</alice>
-      """
-
-      assert {:ok, String.trim(xml)} == XmlJson.AwsApi.serialize(object)
-    end
-
-    test "other namespaces are handled too" do
+    test "list properties are placed under member elements" do
       object = %{
-        "alice" => %{
-          "$" => "bob",
-          "@xmlns" => %{
-            "$" => "http:\/\/some-namespace",
-            "charlie" => "http:\/\/some-other-namespace"
-          }
-        }
+        "alice" => [
+          %{"bob" => "charlie"},
+          %{"bob" => "edgar"}
+        ]
       }
 
       xml = """
-      <alice xmlns="http:\/\/some-namespace" xmlns:charlie="http:\/\/some-other-namespace">bob</alice>
+      <alice><member><bob>charlie</bob></member><member><bob>edgar</bob></member></alice>
       """
 
       assert {:ok, String.trim(xml)} == XmlJson.AwsApi.serialize(object)
     end
 
-    test "nested applications of xml namespaces are not repeated" do
+    test "list properties are placed under cycled, explicit member names" do
       object = %{
-        "alice" => %{
-          "bob" => %{
-            "$" => "david",
-            "@xmlns" => %{
-              "charlie" => "http:\/\/some-other-namespace",
-              "$" => "http:\/\/some-namespace"
-            }
-          },
-          "charlie:edgar" => %{
-            "$" => "frank",
-            "@xmlns" => %{
-              "charlie" => "http:\/\/some-other-namespace",
-              "$" => "http:\/\/some-namespace",
-              "chet" => "http:\/\/namespace.example.com"
-            }
-          },
-          "@xmlns" => %{
-            "charlie" => "http:\/\/some-other-namespace",
-            "$" => "http:\/\/some-namespace"
-          }
-        }
+        "alice" => [
+          %{"bob" => [%{"charlie" => ["chet"]}]},
+          %{"bob" => [%{"charlie" => ["chaz"]}]}
+        ]
       }
 
       xml = """
-      <alice xmlns="http://some-namespace" xmlns:charlie="http://some-other-namespace"><bob>david</bob><charlie:edgar xmlns:chet="http://namespace.example.com">frank</charlie:edgar></alice>
+      <alice><first><bob><second><charlie><first>chet</first></charlie></second></bob></first><first><bob><second><charlie><first>chaz</first></charlie></second></bob></first></alice>
       """
 
-      assert {:ok, String.trim(xml)} == XmlJson.AwsApi.serialize(object)
-    end
-
-    test "namespaces can be excluded through an option" do
-      object = %{
-        "alice" => %{
-          "bob" => %{
-            "$" => "david",
-            "@xmlns" => %{
-              "charlie" => "http:\/\/some-other-namespace",
-              "$" => "http:\/\/some-namespace"
-            }
-          },
-          "charlie:edgar" => %{
-            "$" => "frank",
-            "@xmlns" => %{
-              "charlie" => "http:\/\/some-other-namespace",
-              "$" => "http:\/\/some-namespace",
-              "chet" => "http:\/\/namespace.example.com"
-            }
-          },
-          "@xmlns" => %{
-            "charlie" => "http:\/\/some-other-namespace",
-            "$" => "http:\/\/some-namespace"
-          }
-        }
-      }
-
-      xml = """
-      <alice><bob>david</bob><charlie:edgar>frank</charlie:edgar></alice>
-      """
-
-      assert {:ok, String.trim(xml)} ==
-               XmlJson.AwsApi.serialize(object, exclude_namespaces: true)
+      assert {:ok, String.trim(xml)} == XmlJson.AwsApi.serialize(object, list_element_names: ["first", "second"])
     end
   end
 
