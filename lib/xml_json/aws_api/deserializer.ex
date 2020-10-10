@@ -5,7 +5,7 @@ defmodule XmlJson.AwsApi.Deserializer do
 
   alias XmlJson.SaxHandler
 
-  @spec deserialize(binary(), map()) :: {:ok, map()}
+  @spec deserialize(binary(), map()) :: {:ok, map()} | {:error, Saxy.ParseError.t()}
   def deserialize(xml, opts) do
     case SaxHandler.parse_string(xml) do
       {:ok, element} ->
@@ -25,7 +25,6 @@ defmodule XmlJson.AwsApi.Deserializer do
   defp update_children(aws, %{children: children}, opts) do
     accumulate_children(aws, children, opts)
   end
-
   defp update_children(_aws, _no_children, _opts), do: nil
 
   defp update_text(aws, %{text: ""}), do: aws
@@ -53,9 +52,7 @@ defmodule XmlJson.AwsApi.Deserializer do
         else
           map
         end
-
-      map ->
-        map
+      map -> map
     end
   end
 

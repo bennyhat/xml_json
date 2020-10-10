@@ -9,51 +9,77 @@ defmodule XmlJson.AwsApi do
   alias XmlJson.AwsApi.Serializer
   alias XmlJson.AwsApi.ParamsSerializer
 
-  # @type badgerfish_options ::
-  #         %{
-  #           exclude_namespaces: boolean()
-  #         }
-  #         | [
-  #             exclude_namespaces: boolean()
-  #           ]
+  @type aws_api_options ::
+          %{
+            list_element_names: list(binary())
+          }
+          | [
+              list_element_names: list(binary())
+            ]
 
   @default_opts %{
     list_element_names: ["member"]
   }
 
-  # @doc """
-  # Serializes the given Map.
+  @doc """
+  Serializes the given Map.
 
-  # Returns an `:ok` tuple with a Map serialized to XML
+  Returns an `:ok` tuple with a Map serialized to XML
 
-  # ## Examples
+  ## Examples
 
-  #     iex> XmlJson.BadgerFish.serialize(%{"alice" => %{"$" => "bob"}})
-  #     {:ok, "<alice>bob</alice>"}
+      iex> XmlJson.AwsApi.serialize(%{"alice" => "bob"})
+      {:ok, "<alice>bob</alice>"}
 
-  #     iex> XmlJson.BadgerFish.serialize(%{"alice" => %{"$" => "bob", "@xmlns" => %{"$" => "https://default.example.com"}}}, exclude_namespaces: true)
-  #     {:ok, "<alice>bob</alice>"}
+      iex> XmlJson.AwsApi.serialize(%{"alice" => ["bob", "jane"]})
+      {:ok, "<alice><member>bob</member><member>jane</member></alice>"}
 
-  # """
+  """
+  @spec serialize(map(), aws_api_options()) :: {:ok, binary()} | {:error, term()}
   def serialize(object, opts \\ [])
 
   def serialize(object, opts),
     do: Serializer.serialize(object, merge_default_options(opts))
 
+  @spec serialize!(map(), aws_api_options()) :: binary()
+  def serialize!(map, opts \\ [])
+
+  def serialize!(map, opts) do
+    case serialize(map, opts) do
+      {:ok, xml} -> xml
+      {:error, reason} -> raise reason
+    end
+  end
+
+  @doc """
+  Serializes the given Map as a set request parameters.
+
+  Returns an `:ok` tuple with a Map serialized to a flattened Map
+
+  ## Examples
+
+      iex> XmlJson.AwsApi.serialize_as_params(%{"alice" => "bob"})
+      {:ok, %{"alice" => "bob"}}
+
+      iex> XmlJson.AwsApi.serialize_as_params(%{"alice" => ["bob", "jane"]})
+      {:ok, %{"alice.member.1" => "bob", "alice.member.2" => "jane"}}
+
+  """
+  @spec serialize_as_params(map(), aws_api_options()) :: {:ok, map()} | {:error, term()}
   def serialize_as_params(object, opts \\ [])
 
   def serialize_as_params(object, opts),
     do: ParamsSerializer.serialize(object, merge_default_options(opts))
 
-  # @spec serialize!(map(), badgerfish_options()) :: binary()
-  # def serialize!(map, opts \\ [])
+  @spec serialize_as_params!(map(), aws_api_options()) :: map()
+  def serialize_as_params!(map, opts \\ [])
 
-  # def serialize!(map, opts) do
-  #   case serialize(map, opts) do
-  #     {:ok, xml} -> xml
-  #     {:error, reason} -> raise reason
-  #   end
-  # end
+  def serialize_as_params!(map, opts) do
+    case serialize_as_params(map, opts) do
+      {:ok, xml} -> xml
+      {:error, reason} -> raise reason
+    end
+  end
 
   @doc """
   Deserializes the given XML string.
@@ -62,29 +88,29 @@ defmodule XmlJson.AwsApi do
 
   ## Examples
 
-      iex> XmlJson.BadgerFish.deserialize("<alice>bob</alice>")
-      {:ok, %{"alice" => %{"$" => "bob"}}}
+      iex> XmlJson.AwsApi.deserialize("<alice>bob</alice>")
+      {:ok, %{"alice" => "bob"}}
 
-      iex> XmlJson.BadgerFish.deserialize("<alice xmlns=\\"https://default.example.com\\">bob</alice>", exclude_namespaces: true)
-      {:ok, %{"alice" => %{"$" => "bob"}}}
+      iex> XmlJson.AwsApi.deserialize("<alice><member>bob</member></alice>")
+      {:ok, %{"alice" => ["bob"]}}
 
   """
-  @spec deserialize(binary(), map()) :: {:ok, map()}
+  @spec deserialize(binary(), aws_api_options()) :: {:ok, map()} | {:error, term()}
   def deserialize(xml, opts \\ [])
 
   def deserialize(xml, opts) do
     Deserializer.deserialize(xml, merge_default_options(opts))
   end
 
-  # @spec deserialize!(binary(), badgerfish_options()) :: map()
-  # def deserialize!(xml, opts \\ [])
+  @spec deserialize!(binary(), aws_api_options()) :: map()
+  def deserialize!(xml, opts \\ [])
 
-  # def deserialize!(xml, opts) do
-  #   case deserialize(xml, opts) do
-  #     {:ok, element} -> element
-  #     {:error, reason} -> raise reason
-  #   end
-  # end
+  def deserialize!(xml, opts) do
+    case deserialize(xml, opts) do
+      {:ok, element} -> element
+      {:error, reason} -> raise reason
+    end
+  end
 
   defp merge_default_options(provided) when is_map(provided) do
     Map.merge(@default_opts, provided)

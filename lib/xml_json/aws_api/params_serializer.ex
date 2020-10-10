@@ -3,6 +3,7 @@ defmodule XmlJson.AwsApi.ParamsSerializer do
   An AWS implementation of serialization from a Map into Request Params
   """
 
+  @spec serialize(map(), map()) :: {:ok, map()} | {:error, term()}
   def serialize(object, opts) do
     params =
       to_params("", object, opts)
@@ -10,6 +11,9 @@ defmodule XmlJson.AwsApi.ParamsSerializer do
       |> Map.new()
 
     {:ok, params}
+
+  rescue
+    e -> {:error, e}
   end
 
   defp to_params(prefix, map, opts) when is_map(map) do

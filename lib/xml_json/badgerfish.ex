@@ -35,7 +35,7 @@ defmodule XmlJson.BadgerFish do
       {:ok, "<alice>bob</alice>"}
 
   """
-  @spec serialize(map(), badgerfish_options()) :: {:ok, binary()}
+  @spec serialize(map(), badgerfish_options()) :: {:ok, binary()} | {:error, term()}
   def serialize(object, opts \\ [])
   def serialize(object, opts), do: Serializer.serialize(object, merge_default_options(opts))
 
@@ -63,7 +63,7 @@ defmodule XmlJson.BadgerFish do
       {:ok, %{"alice" => %{"$" => "bob"}}}
 
   """
-  @spec deserialize(binary(), badgerfish_options()) :: {:ok, map()}
+  @spec deserialize(binary(), badgerfish_options()) :: {:ok, map()} | {:error, term()}
   def deserialize(xml, opts \\ [])
   def deserialize(xml, opts), do: Deserializer.deserialize(xml, merge_default_options(opts))
 

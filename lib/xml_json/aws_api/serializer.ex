@@ -5,7 +5,7 @@ defmodule XmlJson.AwsApi.Serializer do
 
   alias XmlJson.SaxHandler
 
-  @spec serialize(map(), map()) :: {:ok, binary()}
+  @spec serialize(map(), map()) :: {:ok, binary()} | {:error, term()}
   def serialize(object, opts) do
     [{name, value}] = Map.to_list(object)
     simple_form = to_simple_form(value, name, opts)

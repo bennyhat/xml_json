@@ -48,6 +48,19 @@ iex> XmlJson.BadgerFish.serialize(%{"root" => %{"@attr" => "hello", "dog" => %{"
 {:ok, "<root attr=\"hello\"><dog>cat</dog></root>"}
 ```
 
+### AWS API
+Based on common conventions seen in at least the EC2 and ELBv2 XML APIs
+```elixir
+iex> XmlJson.AwsApi.deserialize("<root><member><dog>cat</dog></member></root>")
+{:ok, %{"root" => [%{"dog" => "cat"}]}}
+
+iex> XmlJson.AwsApi.serialize(%{"root" => [%{"dog" => "cat"}]})
+{:ok, "<root><member><dog>cat</dog><member></root>"}
+
+iex> XmlJson.AwsApi.serialize_as_params(%{"root" => [%{"dog" => "cat"}, %{"dog" => "horse"}]})
+{:ok, %{"root.member.1.dog" => "cat", "root.member.2.dog" => "horse"}}
+```
+
 ## Installation
 
 The package can be installed by adding `xml_json` to your list of dependencies

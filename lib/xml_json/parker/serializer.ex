@@ -5,7 +5,7 @@ defmodule XmlJson.Parker.Serializer do
 
   alias XmlJson.SaxHandler
 
-  @spec serialize(map(), map()) :: {:ok, binary()}
+  @spec serialize(map(), map()) :: {:ok, binary()} | {:error, term()}
   def serialize(object, opts) do
     {name, value} = root_map_form(object, opts)
     simple_form = to_simple_form(value, name)
