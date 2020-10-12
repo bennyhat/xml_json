@@ -304,6 +304,22 @@ defmodule XmlJson.AwsApiTest do
       assert {:ok, String.trim(xml)} ==
                XmlJson.AwsApi.serialize(object, list_element_names: ["first", "second"])
     end
+
+    test "list properties can be set to an empty string to hoist them" do
+      object = %{
+        "alice" => [
+        %{"bob" => [%{"charlie" => ["chet"]}]},
+        %{"bob" => [%{"charlie" => ["chaz"]}]}
+      ]
+      }
+
+      xml = """
+      <alice><bob><charlie>chet</charlie></bob><bob><charlie>chaz</charlie></bob></alice>
+      """
+
+      assert {:ok, String.trim(xml)} ==
+        XmlJson.AwsApi.serialize(object, list_element_names: [""])
+    end
   end
 
   describe "serialize_as_params/2" do

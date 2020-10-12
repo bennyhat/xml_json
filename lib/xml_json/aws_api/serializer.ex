@@ -34,7 +34,14 @@ defmodule XmlJson.AwsApi.Serializer do
         [to_simple_form(item, list_element_name, child_opts) | acc]
       end)
 
-    {name, [], Enum.reverse(children)}
+    if list_element_name == "" do
+      children = Enum.map(children, fn {_, _, c} -> c end)
+      |> List.flatten()
+
+      {name, [], Enum.reverse(children)}
+    else
+      {name, [], Enum.reverse(children)}
+    end
   end
 
   defp to_simple_form(nil, name, _opts) do
