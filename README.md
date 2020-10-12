@@ -17,8 +17,9 @@ lossless and near-lossless conversion, such as:
 - [`gdata`](http://wiki.open311.org/JSON_and_XML_Conversion/#the-gdata-convention)
 - [`parker`](https://developer.mozilla.org/en-US/docs/Archive/JXON#The_Parker_Convention) (pretty lossy, but my personal favorite)
 - [`yahoo`](https://developer.yahoo.com/yql/guide/response.html#response-xml-to-json) (okay, maybe they're not all great, but they tried)
+- `aws-api` - conventions seen in AWS XML based APIs
 
-Presently this only supports Parker and BadgerFish and is largely happy path
+Presently this only supports Parker, BadgerFish and AWS API and is largely happy path
 testing with the examples provided by each convention. That being said,
 eventually this will come up to a `> 0` major version when that is all worked
 out.
