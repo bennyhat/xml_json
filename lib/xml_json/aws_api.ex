@@ -34,6 +34,8 @@ defmodule XmlJson.AwsApi do
       iex> XmlJson.AwsApi.serialize(%{"alice" => ["bob", "jane"]})
       {:ok, "<alice><member>bob</member><member>jane</member></alice>"}
 
+      iex> XmlJson.AwsApi.serialize(%{"alice" => [%{"name" => "bob"}, %{"name" => "jane"}]}, list_element_names: [""])
+      {:ok, "<alice><name>bob</name><name>jane</name></alice>"}
   """
   @spec serialize(map(), aws_api_options()) :: {:ok, binary()} | {:error, term()}
   def serialize(object, opts \\ [])
@@ -63,6 +65,9 @@ defmodule XmlJson.AwsApi do
 
       iex> XmlJson.AwsApi.serialize_as_params(%{"alice" => ["bob", "jane"]})
       {:ok, %{"alice.member.1" => "bob", "alice.member.2" => "jane"}}
+
+      iex> XmlJson.AwsApi.serialize_as_params(%{"alice" => ["bob", "jane"]}, list_element_names: [""])
+      {:ok, %{"alice.1" => "bob", "alice.2" => "jane"}}
 
   """
   @spec serialize_as_params(map(), aws_api_options()) :: {:ok, map()} | {:error, term()}

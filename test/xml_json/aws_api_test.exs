@@ -308,9 +308,9 @@ defmodule XmlJson.AwsApiTest do
     test "list properties can be set to an empty string to hoist them" do
       object = %{
         "alice" => [
-        %{"bob" => [%{"charlie" => ["chet"]}]},
-        %{"bob" => [%{"charlie" => ["chaz"]}]}
-      ]
+          %{"bob" => [%{"charlie" => ["chet"]}]},
+          %{"bob" => [%{"charlie" => ["chaz"]}]}
+        ]
       }
 
       xml = """
@@ -318,7 +318,7 @@ defmodule XmlJson.AwsApiTest do
       """
 
       assert {:ok, String.trim(xml)} ==
-        XmlJson.AwsApi.serialize(object, list_element_names: [""])
+               XmlJson.AwsApi.serialize(object, list_element_names: [""])
     end
   end
 
@@ -484,6 +484,23 @@ defmodule XmlJson.AwsApiTest do
       }
 
       assert {:ok, params} == XmlJson.AwsApi.serialize_as_params(map)
+    end
+
+    test "list properties can be set to an empty string to omit them from the key" do
+      object = %{
+        "alice" => [
+          %{"bob" => [%{"charlie" => ["chet"]}]},
+          %{"bob" => [%{"charlie" => ["chaz"]}]}
+        ]
+      }
+
+      params = %{
+        "alice.1.bob.1.charlie.1" => "chet",
+        "alice.2.bob.1.charlie.1" => "chaz"
+      }
+
+      assert {:ok, params} ==
+               XmlJson.AwsApi.serialize_as_params(object, list_element_names: [""])
     end
   end
 end

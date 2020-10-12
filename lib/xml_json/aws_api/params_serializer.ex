@@ -11,7 +11,6 @@ defmodule XmlJson.AwsApi.ParamsSerializer do
       |> Map.new()
 
     {:ok, params}
-
   rescue
     e -> {:error, e}
   end
@@ -30,7 +29,7 @@ defmodule XmlJson.AwsApi.ParamsSerializer do
     Enum.with_index(v, 1)
     |> Enum.map(fn {v, vi} ->
       to_params(
-        prefix <> k <> "." <> list_element_name <> "." <> to_string(vi) <> ".",
+        build_key(prefix, k, list_element_name, vi),
         v,
         child_opts
       )
@@ -43,6 +42,14 @@ defmodule XmlJson.AwsApi.ParamsSerializer do
 
   defp to_param({k, v}, prefix, _opts) do
     {prefix <> k, v}
+  end
+
+  defp build_key(prefix, key, "", index) do
+    prefix <> key <> "." <> to_string(index) <> "."
+  end
+
+  defp build_key(prefix, key, list_element_name, index) do
+    prefix <> key <> "." <> list_element_name <> "." <> to_string(index) <> "."
   end
 
   defp cycle_list_name(%{list_element_names: lens} = opts) do

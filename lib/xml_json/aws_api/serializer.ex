@@ -35,8 +35,9 @@ defmodule XmlJson.AwsApi.Serializer do
       end)
 
     if list_element_name == "" do
-      children = Enum.map(children, fn {_, _, c} -> c end)
-      |> List.flatten()
+      children =
+        Enum.map(children, fn {_, _, c} -> c end)
+        |> List.flatten()
 
       {name, [], Enum.reverse(children)}
     else
