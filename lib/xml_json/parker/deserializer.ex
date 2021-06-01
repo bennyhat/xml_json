@@ -49,6 +49,7 @@ defmodule XmlJson.Parker.Deserializer do
   defp maybe_hoist_children(parker) when map_size(parker) == 1 do
     case Map.values(parker) do
       [list] when is_list(list) -> list
+      [map] when is_map(map) -> [map]
       _ -> parker
     end
   end
