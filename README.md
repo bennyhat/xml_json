@@ -70,7 +70,7 @@ in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:xml_json, "~> 0.3.0"}
+    {:xml_json, "~> 0.5.0"}
   ]
 end
 ```
