@@ -6,7 +6,7 @@ defmodule XmlJson.MixProject do
   def project do
     [
       app: :xml_json,
-      version: "0.4.1",
+      version: "0.5.0",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
