@@ -10,14 +10,17 @@ defmodule XmlJson.Parker do
 
   @type parker_options ::
           %{
-            preserve_root: boolean() | binary()
+            preserve_root: boolean() | binary(),
+            try_parse: boolean()
           }
           | [
-              preserve_root: boolean() | binary()
+              preserve_root: boolean() | binary(),
+              try_parse: boolean()
             ]
 
   @default_opts %{
-    preserve_root: false
+    preserve_root: false,
+    try_parse: true
   }
 
   @doc """

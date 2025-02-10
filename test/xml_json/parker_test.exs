@@ -99,6 +99,21 @@ defmodule XmlJson.ParkerTest do
 
       assert {:ok, %{"ding:dong" => "binnen"}} == XmlJson.Parker.deserialize(xml)
     end
+
+    test "do not parse values as numbers or booleans if requested" do
+      xml = """
+      <root>123</root>
+      """
+
+      assert {:ok, %{"root" => "123"}} ==
+               XmlJson.Parker.deserialize(xml, try_parse: false, preserve_root: true)
+
+      assert {:ok, "123"} ==
+               XmlJson.Parker.deserialize(xml, try_parse: false)
+
+      assert {:ok, 123} ==
+               XmlJson.Parker.deserialize(xml, try_parse: true)
+    end
   end
 
   describe "deserialize!/2" do

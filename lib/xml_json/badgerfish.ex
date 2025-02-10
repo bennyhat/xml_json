@@ -10,15 +10,18 @@ defmodule XmlJson.BadgerFish do
 
   @type badgerfish_options ::
           %{
-            exclude_namespaces: boolean()
+            exclude_namespaces: boolean(),
+            try_parse: boolean()
           }
           | [
-              exclude_namespaces: boolean()
+              exclude_namespaces: boolean(),
+              try_parse: boolean()
             ]
 
   @default_opts %{
     exclude_namespaces: false,
-    ns_keys: []
+    ns_keys: [],
+    try_parse: true
   }
 
   @doc """
