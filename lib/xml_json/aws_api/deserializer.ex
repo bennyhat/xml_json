@@ -7,7 +7,7 @@ defmodule XmlJson.AwsApi.Deserializer do
 
   @spec deserialize(binary(), map()) :: {:ok, map()} | {:error, Saxy.ParseError.t()}
   def deserialize(xml, opts) do
-    case SaxHandler.parse_string(xml) do
+    case SaxHandler.parse_string(xml, opts) do
       {:ok, element} ->
         {:ok, %{element.name => walk_element(element, opts)}}
 

@@ -7,7 +7,7 @@ defmodule XmlJson.Parker.Deserializer do
 
   @spec deserialize(binary(), map()) :: {:ok, map()} | {:error, Saxy.ParseError.t()}
   def deserialize(xml, opts) do
-    case SaxHandler.parse_string(xml) do
+    case SaxHandler.parse_string(xml, opts) do
       {:ok, element} ->
         walk_element(element)
         |> maybe_preserve_root(element, opts)
@@ -48,15 +48,19 @@ defmodule XmlJson.Parker.Deserializer do
 
   defp maybe_hoist_children(parker) when map_size(parker) == 1 do
     case Map.values(parker) do
-      [list] when is_list(list) -> list
-      [map] when is_map(map) -> 
-        case Map.values(map) do 
+      [list] when is_list(list) ->
+        list
+
+      [map] when is_map(map) ->
+        case Map.values(map) do
           [nil] -> []
-          _ -> [map]  
+          _ -> [map]
         end
-      _ -> parker
+
+      _ ->
+        parker
     end
- end
+  end
 
   defp maybe_hoist_children(parker), do: parker
 

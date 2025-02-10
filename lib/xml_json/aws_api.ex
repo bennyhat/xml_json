@@ -11,14 +11,17 @@ defmodule XmlJson.AwsApi do
 
   @type aws_api_options ::
           %{
-            list_element_names: list(binary())
+            list_element_names: list(binary()),
+            try_parse: boolean()
           }
           | [
-              list_element_names: list(binary())
+              list_element_names: list(binary()),
+              try_parse: boolean()
             ]
 
   @default_opts %{
-    list_element_names: ["member"]
+    list_element_names: ["member"],
+    try_parse: true
   }
 
   @doc """
