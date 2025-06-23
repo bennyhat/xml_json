@@ -9,7 +9,7 @@ defmodule XmlJson.SaxHandler do
   end
 
   def parse_string(xml, opts \\ %{}) do
-    opts = Map.merge(%{try_parse: true}, opts)
+    opts = Map.merge(%{try_parse: true, propagate_namespaces: true}, opts)
 
     case Saxy.parse_string(xml, __MODULE__, %State{opts: opts, state: []}) do
       {:ok, _} = ok ->
@@ -40,6 +40,19 @@ defmodule XmlJson.SaxHandler do
     {:ok, root}
   end
 
+  def handle_event(
+        :start_element,
+        {name, attributes},
+        %{opts: %{propagate_namespaces: false}} = state
+      ) do
+    current_element = %{
+      name: name,
+      attributes: attributes
+    }
+
+    {:ok, %State{state | state: [current_element | state.state]}}
+  end
+
   def handle_event(:start_element, {name, attributes}, state) do
     [parent | _rest] = state.state
     parent_ns = extract_ns_attributes(parent.attributes)
@@ -65,17 +78,21 @@ defmodule XmlJson.SaxHandler do
 
   def handle_event(:characters, chars, state) do
     [current_element | rest] = state.state
+    text = extract_text(chars, state.opts)
 
-    {:ok, %State{state | state: [maybe_add_text(current_element, chars, state.opts) | rest]}}
+    current_element =
+      Map.update(current_element, :children, [text], fn children ->
+        children ++ [text]
+      end)
+
+    {:ok, %State{state | state: [current_element | rest]}}
   end
 
-  defp maybe_add_text(%{children: _} = element, _chars, _opts), do: element
+  defp extract_text(chars, %{try_parse: true}),
+    do: %{text: try_parse(chars)}
 
-  defp maybe_add_text(element, chars, %{try_parse: true}),
-    do: Map.put(element, :text, try_parse(chars))
-
-  defp maybe_add_text(element, chars, %{try_parse: false}),
-    do: Map.put(element, :text, String.trim(chars, " "))
+  defp extract_text(chars, %{try_parse: false}),
+    do: %{text: String.trim(chars, " ")}
 
   defp extract_ns_attributes(attrs) do
     Enum.filter(attrs, &is_ns_attr?/1)

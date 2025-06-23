@@ -1,6 +1,6 @@
 defmodule XmlJson.AwsApi.Deserializer do
   @moduledoc """
-  AWS implementation for deserialization from a Xml into Map
+  AWS implementation for deserialization from Xml into a Map
   """
 
   alias XmlJson.SaxHandler
