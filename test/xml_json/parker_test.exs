@@ -76,12 +76,21 @@ defmodule XmlJson.ParkerTest do
       assert {:ok, %{"nil" => nil, "empty" => nil}} == XmlJson.Parker.deserialize(xml)
     end
 
-    test "if all siblings have the same name, they become an array" do
+    test "if all siblings have the same name, they become a hoisted array" do
       xml = """
       <root><item>1</item><item>2</item><item>three</item></root>
       """
 
       assert {:ok, [1, 2, "three"]} == XmlJson.Parker.deserialize(xml)
+    end
+
+    test "if only some siblings have the same name, they become a nested array" do
+      xml = """
+      <root><cat>dog</cat><item>1</item><item>2</item><item>three</item></root>
+      """
+
+      assert {:ok, %{"cat" => "dog", "item" => [1, 2, "three"]}} ==
+               XmlJson.Parker.deserialize(xml)
     end
 
     test "for mixed mode text, comments, attributes and element nodes, it absorb all but the elements" do

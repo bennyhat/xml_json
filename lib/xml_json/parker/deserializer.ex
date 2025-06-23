@@ -19,28 +19,39 @@ defmodule XmlJson.Parker.Deserializer do
 
   defp walk_element(element) do
     update_children(%{}, element)
-    |> update_text(element)
     |> update_attributes(element)
   end
 
   defp update_children(_parker, %{children: children}) do
     accumulate_children(children)
     |> maybe_hoist_children()
+    |> text_or_elements()
   end
 
   defp update_children(_parker, _no_children), do: nil
-  defp update_text(nil, %{text: ""}), do: nil
-  defp update_text(nil, %{text: text}), do: text
-  defp update_text(parker, _ignored), do: parker
   defp update_attributes(parker, _ignored), do: parker
 
   defp accumulate_children(children) do
-    Enum.reduce(children, %{}, fn i, a ->
-      walked = walk_element(i)
+    Enum.reduce(children, %{}, fn
+      %{name: name} = i, a ->
+        walked = walk_element(i)
 
-      Map.update(a, i.name, walked, &accumulate_list(&1, walked))
+        Map.update(a, name, walked, &accumulate_list(&1, walked))
+
+      %{text: text}, a ->
+        Map.update(a, "$", text, fn current -> current <> " " <> text end)
     end)
   end
+
+  defp text_or_elements(%{"$" => text} = children) when map_size(children) == 1 do
+    text
+  end
+
+  defp text_or_elements(children) when is_map(children) do
+    Map.delete(children, "$")
+  end
+
+  defp text_or_elements(children), do: children
 
   defp accumulate_list(value, walked) do
     List.wrap(value) ++ [walked]

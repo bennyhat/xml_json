@@ -18,24 +18,14 @@ defmodule XmlJson.BadgerFish.Deserializer do
 
   defp walk_element(element, opts) do
     update_children(%{}, element, opts)
-    |> update_text(element)
     |> update_attributes(element, opts)
   end
 
   defp update_children(badgerfish, %{children: children}, opts) do
     accumulate_children(badgerfish, children, opts)
-    |> Map.delete("$")
   end
 
   defp update_children(badgerfish, _no_children, _opts), do: badgerfish
-  defp update_text(badgerfish, %{text: ""}), do: badgerfish
-  defp update_text(badgerfish, %{text: "\n"}), do: badgerfish
-
-  defp update_text(badgerfish, %{text: text}) do
-    Map.put(badgerfish, "$", text)
-  end
-
-  defp update_text(badgerfish, _empty_element), do: badgerfish
 
   defp update_attributes(badgerfish, element, opts) do
     Enum.reduce(element.attributes, badgerfish, fn {k, v}, a ->
@@ -65,10 +55,18 @@ defmodule XmlJson.BadgerFish.Deserializer do
   defp handle_namespaces(key, value), do: {key, value}
 
   defp accumulate_children(badgerfish, children, opts) do
-    Enum.reduce(children, badgerfish, fn element, object ->
-      walked = walk_element(element, opts)
+    Enum.reduce(children, badgerfish, fn
+      %{name: _name} = element, object ->
+        walked = walk_element(element, opts)
 
-      Map.update(object, element.name, walked, &accumulate_list(&1, walked))
+        Map.update(object, element.name, walked, &accumulate_list(&1, walked))
+
+      %{text: text}, object
+      when text not in ["", "\n"] ->
+        Map.update(object, "$", text, fn current -> current <> " " <> text end)
+
+      _, object ->
+        object
     end)
   end
 

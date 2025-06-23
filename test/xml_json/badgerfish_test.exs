@@ -133,7 +133,7 @@ defmodule XmlJson.BadgerFishTest do
               }} == XmlJson.BadgerFish.deserialize(xml)
     end
 
-    test "trailing text is absorbed" do
+    test "trailing text is preserved" do
       xml = """
       <dog><horse>2</horse>cat</dog>
       """
@@ -141,6 +141,21 @@ defmodule XmlJson.BadgerFishTest do
       assert {:ok,
               %{
                 "dog" => %{
+                  "horse" => %{"$" => 2},
+                  "$" => "cat"
+                }
+              }} == XmlJson.BadgerFish.deserialize(xml)
+    end
+
+    test "multiple bits of text are concatenated with a space" do
+      xml = """
+      <dog>cat <horse>2</horse> dog</dog>
+      """
+
+      assert {:ok,
+              %{
+                "dog" => %{
+                  "$" => "cat dog",
                   "horse" => %{"$" => 2}
                 }
               }} == XmlJson.BadgerFish.deserialize(xml)
